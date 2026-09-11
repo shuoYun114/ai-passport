@@ -264,10 +264,17 @@ static bool buddy_parse_token_monitor(const cJSON *object, buddy_token_monitor_t
         return true;
     }
 
+    unsigned cost_today = 0;
+    unsigned cost_total = 0;
+
     (void)buddy_json_u64(tm_obj, "tokens_today", &tm->tokens_today);
     (void)buddy_json_u64(tm_obj, "tokens_total", &tm->tokens_total);
-    (void)buddy_json_unsigned(tm_obj, "cost_today_cents", &tm->cost_today_cents);
-    (void)buddy_json_unsigned(tm_obj, "cost_total_cents", &tm->cost_total_cents);
+    if (buddy_json_unsigned(tm_obj, "cost_today_cents", &cost_today)) {
+        tm->cost_today_cents = (uint32_t)cost_today;
+    }
+    if (buddy_json_unsigned(tm_obj, "cost_total_cents", &cost_total)) {
+        tm->cost_total_cents = (uint32_t)cost_total;
+    }
 
     if (buddy_json_optional_string(tm_obj, "currency", &currency_str, &currency_len) && currency_str != NULL) {
         buddy_copy_utf8(tm->currency, sizeof(tm->currency), currency_str, currency_len, NULL);
