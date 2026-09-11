@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "antigravity-usage"
+version = "0.1.0"
+description = "Google Antigravity 模型额度检测工具与 FoloToy AI Passport 硬件桥接器"
+readme = "README.zh_CN.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "HX SY", email = "syhx.ikun@gmail.com"}
+]
+keywords = ["antigravity", "gemini", "ai-passport", "quota", "folotoy", "ble"]
+dependencies = [
+    "psutil>=5.9.0",
+    "bleak>=0.21.0",
+]
+
+[project.scripts]
+antigravity-usage = "antigravity_usage.cli:main"
+antigravity-bridge = "antigravity_usage.bridge:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
