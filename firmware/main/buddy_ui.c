@@ -405,9 +405,9 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char quota_buf[48];
     char reset_buf[48];
-    char status_buf[48];
-    char token_buf[32];
-    char label_buf[32];
+    char status_buf[64];
+    char token_buf[16];
+    char label_buf[64];
     const buddy_codex_usage_t *u = &s->codex_usage;
 
     /* 顶部标题区 */
@@ -489,8 +489,8 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char value[64];
     char reset[48];
-    char token_buf[32];
-    char label_buf[32];
+    char token_buf[16];
+    char label_buf[64];
     const buddy_codex_usage_t *u = &s->codex_usage;
 
     text(layer, 8, 34, 224, COL_ORANGE, "模型配额中心", true, LV_TEXT_ALIGN_CENTER);
