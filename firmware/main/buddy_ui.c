@@ -409,56 +409,139 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     int i;
 
     /* 顶部大标题与系统副标 */
-    text(layer, 8, 28, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
-    text(layer, 8, 48, 224, COL_DIM, "系统主菜单", false, LV_TEXT_ALIGN_CENTER);
-    rule(layer, 16, 64, 208, COL_LINE);
+    text(layer, 8, 26, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 44, 224, COL_DIM, "系统主菜单", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 16, 58, 208, COL_LINE);
 
-    /* 4 个主功能卡片 */
-    for (i = 0; i < BUDDY_LAUNCHER_COUNT; ++i) {
-        int y = 70 + i * 54;
+    /* 5 个主功能卡片 */
+    for (i = 0; i < BUDDY_LAUNCHER_ITEM_COUNT; ++i) {
+        int y = 64 + i * 46;
         bool selected = (i == (int)s->launcher_selection);
         lv_color_t accent = COL_ORANGE;
         const char *title = "";
         const char *subtitle = "";
 
-        if (i == BUDDY_LAUNCHER_AI_MONITOR) {
+        if (i == BUDDY_LAUNCHER_ITEM_AI_MONITOR) {
             accent = COL_ORANGE;
             title = "1. AI 监控看板";
             format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
             unsigned rem = s->codex_usage.available ? (100U - s->codex_usage.primary_used_percent) : 0U;
             snprintf(sub_buf, sizeof(sub_buf), "今日 %s · 额度 %u%%", token_buf, rem);
             subtitle = sub_buf;
-        } else if (i == BUDDY_LAUNCHER_GAME_SNAKE) {
-            accent = COL_GREEN;
-            title = "2. 经典贪吃蛇";
-            subtitle = "转向避障 · 挑战最高分";
-        } else if (i == BUDDY_LAUNCHER_GAME_DINO) {
+        } else if (i == BUDDY_LAUNCHER_ITEM_PROFILE) {
             accent = COL_YELLOW;
-            title = "3. 跳跳恐龙跑酷";
+            title = "2. 个人智能主页";
+            subtitle = "电子工牌 · 伴侣名片";
+        } else if (i == BUDDY_LAUNCHER_ITEM_GAME_SNAKE) {
+            accent = COL_GREEN;
+            title = "3. 经典贪吃蛇";
+            subtitle = "转向避障 · 挑战最高分";
+        } else if (i == BUDDY_LAUNCHER_ITEM_GAME_DINO) {
+            accent = COL_YELLOW;
+            title = "4. 跳跳恐龙跑酷";
             subtitle = "越过仙人掌 · 刷新纪录";
-        } else if (i == BUDDY_LAUNCHER_SETTINGS) {
+        } else if (i == BUDDY_LAUNCHER_ITEM_SETTINGS) {
             accent = COL_BLUE;
-            title = "4. 系统设置";
+            title = "5. 系统设置";
             subtitle = "屏幕亮度 · 蓝牙控制";
         }
 
         /* 绘制卡片底框与边框 */
         if (selected) {
-            box(layer, 8, y, 224, 48, lv_color_hex(0x181c22), accent, 2, 0);
-            box(layer, 8, y, 4, 48, accent, accent, 0, 0);
-            text(layer, 18, y + 6, 185, accent, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 26, 185, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
-            text(layer, 208, y + 14, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
+            box(layer, 8, y, 224, 42, lv_color_hex(0x181c22), accent, 2, 0);
+            box(layer, 8, y, 4, 42, accent, accent, 0, 0);
+            text(layer, 18, y + 4, 185, accent, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 23, 185, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 208, y + 11, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
         } else {
-            box(layer, 8, y, 224, 48, lv_color_hex(0x101215), COL_LINE, 1, 0);
-            box(layer, 8, y, 3, 48, COL_DIM, COL_DIM, 0, 0);
-            text(layer, 18, y + 6, 185, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 26, 185, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            box(layer, 8, y, 224, 42, lv_color_hex(0x101215), COL_LINE, 1, 0);
+            box(layer, 8, y, 3, 42, COL_DIM, COL_DIM, 0, 0);
+            text(layer, 18, y + 4, 185, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 23, 185, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
         }
     }
 
     /* 底部操作提示 */
     text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:选择  OK:进入  长按:休眠", false, LV_TEXT_ALIGN_CENTER);
+}
+
+static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    char token_buf[16];
+    char cost_buf[32];
+    char name_buf[48];
+    char owner_buf[64];
+
+    /* 顶部标头栏 */
+    text(layer, 12, 28, 120, COL_ORANGE, "个人智能主页", true, LV_TEXT_ALIGN_LEFT);
+    box(layer, 146, 28, 82, 16, lv_color_hex(0x231d16), COL_ORANGE, 1, 0);
+    text(layer, 146, 29, 82, COL_ORANGE, "PASSPORT", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 12, 48, 216, COL_LINE);
+
+    /* 卡片 1: 电子工牌与伴侣立绘 (ID Badge & Companion, Y: 54 ~ 166, H: 112) */
+    box(layer, 8, 54, 224, 112, lv_color_hex(0x111317), COL_LINE, 1, 0);
+    box(layer, 8, 54, 3, 112, COL_YELLOW, COL_YELLOW, 0, 0);
+
+    /* 伴侣头像立绘框 (X: 16, Y: 60, W: 74, H: 100) */
+    box(layer, 16, 60, 74, 100, lv_color_hex(0x171a20), COL_LINE, 1, 0);
+    buddy_i4_clip_t clip = {.x = 16, .y = 60, .w = 74, .h = 80};
+    buddy_sprite_bounds_t bounds;
+    int sp_x = 24;
+    int sp_y = 66;
+    if (buddy_sprite_bounds(s->species, art_state(s->character), s_tick, &bounds)) {
+        sp_x = 16 + (74 - bounds.w) / 2 - bounds.x;
+        sp_y = 60 + (80 - bounds.h) / 2 - bounds.y;
+    }
+    buddy_sprite_render(&s_surface, &clip, s->species, art_state(s->character), s_tick, sp_x, sp_y);
+    text(layer, 16, 142, 74, COL_GREEN, buddy_sprite_name(s->species), false, LV_TEXT_ALIGN_CENTER);
+
+    /* 右侧身份信息 (X: 98, Y: 60 ~ 160) */
+    snprintf(name_buf, sizeof(name_buf), "%s", s->name[0] ? s->name : "syhx114514");
+    text(layer, 98, 62, 126, COL_INK, name_buf, true, LV_TEXT_ALIGN_LEFT);
+
+    /* 认证标签 */
+    box(layer, 98, 86, 84, 16, lv_color_hex(0x1a261a), COL_GREEN, 1, 0);
+    text(layer, 98, 87, 84, COL_GREEN, "Pro 极客认证", false, LV_TEXT_ALIGN_CENTER);
+
+    text(layer, 98, 110, 126, COL_DIM, "编号: C3-32EAAA", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 98, 128, 126, COL_YELLOW, "战力: S 级极客", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 98, 146, 126, s->ble_connected ? COL_GREEN : COL_DIM,
+         s->ble_connected ? "● 在线同步中" : "○ 蓝牙待命中", false, LV_TEXT_ALIGN_LEFT);
+
+    /* 卡片 2: 通行证核心数据与资产 (Passport Data, Y: 172 ~ 284, H: 112) */
+    box(layer, 8, 172, 224, 112, lv_color_hex(0x111317), COL_LINE, 1, 0);
+    box(layer, 8, 172, 3, 112, COL_ORANGE, COL_ORANGE, 0, 0);
+    text(layer, 18, 178, 120, COL_ORANGE, "通行证数据", true, LV_TEXT_ALIGN_LEFT);
+    rule(layer, 18, 198, 204, lv_color_hex(0x22262d));
+
+    /* 行 1: 绑定账号 */
+    snprintf(owner_buf, sizeof(owner_buf), "%s", s->owner[0] ? s->owner : "syhx114514@gmail.com");
+    text(layer, 18, 204, 52, COL_DIM, "账号", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 72, 204, 150, COL_INK, owner_buf, false, LV_TEXT_ALIGN_LEFT);
+
+    /* 行 2: 今日 Token 消耗 */
+    format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
+    text(layer, 18, 224, 52, COL_DIM, "用量", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 72, 224, 150, COL_YELLOW, token_buf, false, LV_TEXT_ALIGN_LEFT);
+
+    /* 行 3: 主力模型状态 */
+    text(layer, 18, 244, 52, COL_DIM, "主力", false, LV_TEXT_ALIGN_LEFT);
+    if (s->codex_usage.available) {
+        unsigned p_rem = 100U - s->codex_usage.primary_used_percent;
+        char m_buf[32];
+        snprintf(m_buf, sizeof(m_buf), "Gemini (剩余 %u%%)", p_rem);
+        text(layer, 72, 244, 150, COL_GREEN, m_buf, false, LV_TEXT_ALIGN_LEFT);
+    } else {
+        text(layer, 72, 244, 150, COL_GREEN, "Gemini 3.8 Flash", false, LV_TEXT_ALIGN_LEFT);
+    }
+
+    /* 行 4: 预估价值 */
+    snprintf(cost_buf, sizeof(cost_buf), "¥%.2f · PRO套餐", (double)s->token_monitor.cost_today_cents / 100.0);
+    text(layer, 18, 264, 52, COL_DIM, "资产", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 72, 264, 150, COL_BLUE, cost_buf, false, LV_TEXT_ALIGN_LEFT);
+
+    /* 底部操作提示 */
+    text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:换伴侣  OK:互动  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_game_snake(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -935,6 +1018,7 @@ static void redraw(void)
     switch (s_snapshot.page) {
     case BUDDY_PAGE_LAUNCHER: draw_launcher(layer, &s_snapshot); break;
     case BUDDY_PAGE_HOME: draw_home(layer, &s_snapshot); break;
+    case BUDDY_PAGE_PROFILE: draw_profile(layer, &s_snapshot); break;
     case BUDDY_PAGE_GAME_SNAKE: draw_game_snake(layer, &s_snapshot); break;
     case BUDDY_PAGE_GAME_DINO: draw_game_dino(layer, &s_snapshot); break;
     case BUDDY_PAGE_LIMITS: draw_limits(layer, &s_snapshot); break;

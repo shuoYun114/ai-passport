@@ -39,6 +39,7 @@ typedef enum {
     BUDDY_PAGE_LAUNCHER = 0,    /* 系统大菜单 (Launcher) */
     BUDDY_PAGE_HOME,            /* AI 监控中心 (Tokens & 额度主屏) */
     BUDDY_PAGE_STATUS = BUDDY_PAGE_HOME,
+    BUDDY_PAGE_PROFILE,         /* 个人智能主页 (Passport Profile & Badge) */
     BUDDY_PAGE_LIMITS,          /* 配额中心 */
     BUDDY_PAGE_TOOLS,           /* 工具明细 */
     BUDDY_PAGE_GAME_SNAKE,      /* 经典贪吃蛇小游戏 */
@@ -51,6 +52,7 @@ typedef enum {
 
 typedef enum {
     BUDDY_LAUNCHER_ITEM_AI_MONITOR = 0, /* AI 监控中心 */
+    BUDDY_LAUNCHER_ITEM_PROFILE,        /* 个人智能主页 */
     BUDDY_LAUNCHER_ITEM_GAME_SNAKE,     /* 经典贪吃蛇 */
     BUDDY_LAUNCHER_ITEM_GAME_DINO,      /* 跳跳恐龙 */
     BUDDY_LAUNCHER_ITEM_SETTINGS,       /* 系统与设置 */
@@ -58,6 +60,7 @@ typedef enum {
 } buddy_launcher_item_t;
 
 #define BUDDY_LAUNCHER_AI_MONITOR BUDDY_LAUNCHER_ITEM_AI_MONITOR
+#define BUDDY_LAUNCHER_PROFILE    BUDDY_LAUNCHER_ITEM_PROFILE
 #define BUDDY_LAUNCHER_GAME_SNAKE BUDDY_LAUNCHER_ITEM_GAME_SNAKE
 #define BUDDY_LAUNCHER_GAME_DINO  BUDDY_LAUNCHER_ITEM_GAME_DINO
 #define BUDDY_LAUNCHER_SETTINGS   BUDDY_LAUNCHER_ITEM_SETTINGS

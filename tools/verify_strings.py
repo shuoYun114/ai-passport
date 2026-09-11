@@ -14,6 +14,6 @@ missing = [c for c in chinese_in_strings if f"U+{ord(c):04X}" not in c_font]
 print("屏幕字符串中中文字符总数:", len(chinese_in_strings))
 print("屏幕字符串中缺失字数:", len(missing))
 if missing:
-    print("缺失的文字:", missing)
+    print("缺失的文字:", [f"{c} (U+{ord(c):04X})" for c in missing])
 else:
     print("[SUCCESS] 屏幕上所有的汉字 100% 完整收录在字库中，彻底无缺字乱码！")

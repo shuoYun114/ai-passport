@@ -200,12 +200,17 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                 print("[OK] 设备已成功连接并绑定！Token Monitor 数据流已上线！\n", flush=True)
                 connected_once = True
 
-                # 同步时钟
+                # 同步时钟与工牌个人档案
                 tz_offset = int(time.mktime(time.localtime()) - time.mktime(time.gmtime()))
                 await send_payload(
                     client,
                     json.dumps({"time": [int(time.time()), tz_offset]}).encode() + b"\n",
                 )
+                init_snap = collect_all_tools()
+                u_name = init_snap.user_name.split("@")[0] if init_snap.user_name else "syhx114514"
+                u_owner = init_snap.user_name if init_snap.user_name else "syhx114514@gmail.com"
+                await send_payload(client, json.dumps({"name": u_name}).encode() + b"\n")
+                await send_payload(client, json.dumps({"owner": u_owner}).encode() + b"\n")
 
                 last_heartbeat = 0.0
                 last_refresh = 0.0

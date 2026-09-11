@@ -300,6 +300,9 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
             case BUDDY_LAUNCHER_ITEM_AI_MONITOR:
                 state->page = BUDDY_PAGE_HOME;
                 break;
+            case BUDDY_LAUNCHER_ITEM_PROFILE:
+                state->page = BUDDY_PAGE_PROFILE;
+                break;
             case BUDDY_LAUNCHER_ITEM_GAME_SNAKE:
                 buddy_snake_reset();
                 state->page = BUDDY_PAGE_GAME_SNAKE;
@@ -315,6 +318,22 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
             default:
                 break;
             }
+            buddy_set_ui_refresh(action);
+        }
+        return;
+    }
+
+    /* 个人主页按键交互：UP/DOWN 切换伴侣形象，短按 OK 触发伴侣欢呼互动 */
+    if (state->page == BUDDY_PAGE_PROFILE) {
+        if (key == BUDDY_KEY_UP) {
+            state->species = (uint8_t)((state->species + 2U) % 3U);
+            buddy_set_ui_refresh(action);
+        } else if (key == BUDDY_KEY_DOWN) {
+            state->species = (uint8_t)((state->species + 1U) % 3U);
+            buddy_set_ui_refresh(action);
+        } else if (key == BUDDY_KEY_OK) {
+            /* 点击工牌触发爱心与欢呼互动 */
+            state->character = BUDDY_CHARACTER_HEART;
             buddy_set_ui_refresh(action);
         }
         return;
