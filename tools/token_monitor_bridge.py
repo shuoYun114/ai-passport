@@ -223,6 +223,16 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    if not args.dry_run:
+        print("=" * 60)
+        print("       FoloToy AI Passport · Token Monitor 同步服务")
+        print("=" * 60)
+        print("请确认：")
+        print("  1. 电脑系统蓝牙已开启")
+        print("  2. AI Passport 设备已开机并在电脑附近")
+        print("  3. 首次配对若设备屏幕显示 6 位配对码，请在 Windows 弹窗中输入")
+        print("=" * 60 + "\n", flush=True)
+
     try:
         asyncio.run(run_bridge(args.device, args.dry_run))
         return 0
