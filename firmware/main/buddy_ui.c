@@ -375,25 +375,6 @@ static void usage_reset_text(char *destination, size_t size, uint64_t resets_at,
     }
 }
 
-static void format_compact_tokens(char *dest, size_t size, uint64_t tokens)
-{
-    if (tokens >= 1000000ULL) {
-        snprintf(dest, size, "%.1f M", (double)tokens / 1000000.0);
-    } else if (tokens >= 1000ULL) {
-        snprintf(dest, size, "%.1f K", (double)tokens / 1000.0);
-    } else {
-        snprintf(dest, size, "%llu", (unsigned long long)tokens);
-    }
-}
-
-static void format_compact_money(char *dest, size_t size, uint32_t cents, const char *currency)
-{
-    const char *symbol = "$";
-    if (currency != NULL && strcmp(currency, "CNY") == 0) {
-        symbol = "¥";
-    }
-    snprintf(dest, size, "%s%u.%02u", symbol, (unsigned)(cents / 100U), (unsigned)(cents % 100U));
-}
 
 static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {

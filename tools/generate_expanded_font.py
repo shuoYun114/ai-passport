@@ -56,6 +56,8 @@ def generate_font(size: int, font_name: str, output_c: Path) -> None:
         all_symbols,
         "--format",
         "lvgl",
+        "--lv-include",
+        "lvgl.h",
         "--lv-font-name",
         font_name,
         "-o",
