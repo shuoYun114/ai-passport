@@ -8,6 +8,7 @@
 #include "buddy_font_zh.h"
 #include "buddy_sprite.h"
 #include "buddy_text_layout.h"
+#include "buddy_games.h"
 #include "lvgl.h"
 
 #define UI_W 240
@@ -401,6 +402,209 @@ static void format_token_metric(char *dest, size_t size, uint64_t count)
     }
 }
 
+static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    char sub_buf[64];
+    char token_buf[16];
+    int i;
+
+    /* 顶部大标题与系统副标 */
+    text(layer, 8, 28, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 48, 224, COL_DIM, "系统主菜单", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 16, 64, 208, COL_LINE);
+
+    /* 4 个主功能卡片 */
+    for (i = 0; i < BUDDY_LAUNCHER_COUNT; ++i) {
+        int y = 70 + i * 54;
+        bool selected = (i == (int)s->launcher_selection);
+        lv_color_t accent = COL_ORANGE;
+        const char *title = "";
+        const char *subtitle = "";
+
+        if (i == BUDDY_LAUNCHER_AI_MONITOR) {
+            accent = COL_ORANGE;
+            title = "1. AI 监控看板";
+            format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
+            unsigned rem = s->codex_usage.available ? (100U - s->codex_usage.primary_used_percent) : 0U;
+            snprintf(sub_buf, sizeof(sub_buf), "今日 %s · 额度 %u%%", token_buf, rem);
+            subtitle = sub_buf;
+        } else if (i == BUDDY_LAUNCHER_GAME_SNAKE) {
+            accent = COL_GREEN;
+            title = "2. 经典贪吃蛇";
+            subtitle = "转向避障 · 挑战最高分";
+        } else if (i == BUDDY_LAUNCHER_GAME_DINO) {
+            accent = COL_YELLOW;
+            title = "3. 跳跳恐龙跑酷";
+            subtitle = "越过仙人掌 · 刷新纪录";
+        } else if (i == BUDDY_LAUNCHER_SETTINGS) {
+            accent = COL_BLUE;
+            title = "4. 系统设置";
+            subtitle = "屏幕亮度 · 蓝牙控制";
+        }
+
+        /* 绘制卡片底框与边框 */
+        if (selected) {
+            box(layer, 8, y, 224, 48, lv_color_hex(0x181c22), accent, 2, 0);
+            box(layer, 8, y, 4, 48, accent, accent, 0, 0);
+            text(layer, 18, y + 6, 185, accent, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 26, 185, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 208, y + 14, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
+        } else {
+            box(layer, 8, y, 224, 48, lv_color_hex(0x101215), COL_LINE, 1, 0);
+            box(layer, 8, y, 3, 48, COL_DIM, COL_DIM, 0, 0);
+            text(layer, 18, y + 6, 185, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 26, 185, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+        }
+    }
+
+    /* 底部操作提示 */
+    text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:选择  OK:进入  长按:休眠", false, LV_TEXT_ALIGN_CENTER);
+}
+
+static void draw_game_snake(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    const buddy_game_snake_t *snake = buddy_snake_get_state();
+    char score_buf[32];
+    char high_buf[32];
+    uint16_t i;
+    (void)s;
+
+    /* 顶部得分栏 */
+    text(layer, 12, 28, 80, COL_GREEN, "经典贪吃蛇", true, LV_TEXT_ALIGN_LEFT);
+    snprintf(score_buf, sizeof(score_buf), "得分: %u", (unsigned)snake->score);
+    text(layer, 96, 28, 64, COL_INK, score_buf, false, LV_TEXT_ALIGN_RIGHT);
+    snprintf(high_buf, sizeof(high_buf), "最高: %u", (unsigned)snake->high_score);
+    text(layer, 164, 28, 64, COL_ORANGE, high_buf, false, LV_TEXT_ALIGN_RIGHT);
+
+    /* 网格区域外边框 (220 x 220 居中在 240 x 320 中) */
+    const int origin_x = 10;
+    const int origin_y = 52;
+    const int cell_size = 10;
+    box(layer, origin_x - 2, origin_y - 2, 224, 224, lv_color_hex(0x0c0e11), COL_LINE, 1, 0);
+
+    /* 绘制食物 (双色发光点) */
+    int food_px = origin_x + snake->food.x * cell_size;
+    int food_py = origin_y + snake->food.y * cell_size;
+    box(layer, food_px + 1, food_py + 1, 8, 8, COL_YELLOW, COL_ORANGE, 1, 0);
+
+    /* 绘制蛇身 (墨绿到青绿) */
+    for (i = 1; i < snake->length; ++i) {
+        int bx = origin_x + snake->body[i].x * cell_size;
+        int by = origin_y + snake->body[i].y * cell_size;
+        box(layer, bx + 1, by + 1, 8, 8, lv_color_hex(0x3a8055), lv_color_hex(0x275a3a), 1, 0);
+    }
+
+    /* 绘制蛇头 (亮绿 + 眼睛) */
+    if (snake->length > 0) {
+        int hx = origin_x + snake->body[0].x * cell_size;
+        int hy = origin_y + snake->body[0].y * cell_size;
+        box(layer, hx + 1, hy + 1, 8, 8, COL_GREEN, lv_color_hex(0x429661), 1, 0);
+        pixel(hx + 3, hy + 3, color_index(COL_BG));
+        pixel(hx + 6, hy + 3, color_index(COL_BG));
+    }
+
+    /* 游戏结束或暂停悬浮窗 */
+    if (snake->game_over) {
+        box(layer, 36, 115, 168, 88, lv_color_hex(0x181c22), COL_RED, 2, 0);
+        text(layer, 36, 125, 168, COL_RED, "游戏结束", true, LV_TEXT_ALIGN_CENTER);
+        text(layer, 36, 150, 168, COL_INK, "短按 OK 重新开始", false, LV_TEXT_ALIGN_CENTER);
+        text(layer, 36, 170, 168, COL_DIM, "长按 OK 返回菜单", false, LV_TEXT_ALIGN_CENTER);
+    } else if (snake->paused) {
+        box(layer, 48, 125, 144, 60, lv_color_hex(0x181c22), COL_YELLOW, 2, 0);
+        text(layer, 48, 138, 144, COL_YELLOW, "游戏暂停", true, LV_TEXT_ALIGN_CENTER);
+        text(layer, 48, 160, 144, COL_INK, "短按 OK 继续", false, LV_TEXT_ALIGN_CENTER);
+    }
+
+    /* 底部操作栏 */
+    text(layer, 8, 292, 224, COL_DIM, "UP/DOWN:转向  OK:暂停  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
+}
+
+static void draw_game_dino(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    const buddy_game_dino_t *dino = buddy_dino_get_state();
+    char score_buf[32];
+    char high_buf[32];
+    int i;
+    (void)s;
+
+    /* 顶部状态栏 */
+    text(layer, 12, 28, 80, COL_YELLOW, "跳跳恐龙", true, LV_TEXT_ALIGN_LEFT);
+    snprintf(score_buf, sizeof(score_buf), "得分: %u", (unsigned)dino->score);
+    text(layer, 96, 28, 64, COL_INK, score_buf, false, LV_TEXT_ALIGN_RIGHT);
+    snprintf(high_buf, sizeof(high_buf), "最高: %u", (unsigned)dino->high_score);
+    text(layer, 164, 28, 64, COL_ORANGE, high_buf, false, LV_TEXT_ALIGN_RIGHT);
+
+    /* 跑酷主背景框 (224 x 224 像素，Y: 52 ~ 276) */
+    box(layer, 8, 52, 224, 224, lv_color_hex(0x0c0e11), COL_LINE, 1, 0);
+
+    /* 天空浮云 (两朵缓缓移动的像素云) */
+    int cloud1_x = (int)((dino->tick_count * 2) % 260) - 20;
+    int cloud2_x = (int)((dino->tick_count * 3 + 130) % 260) - 20;
+    box(layer, 230 - cloud1_x, 75, 24, 6, lv_color_hex(0x232832), lv_color_hex(0x232832), 0, 0);
+    box(layer, 230 - cloud2_x, 105, 30, 6, lv_color_hex(0x20242d), lv_color_hex(0x20242d), 0, 0);
+
+    /* 地面基准线 Y = 230 */
+    const int ground_y = 230;
+    rule(layer, 12, ground_y, 216, COL_DIM);
+
+    /* 地表碎石点缀 (根据 tick 滚动) */
+    for (i = 0; i < 6; ++i) {
+        int dot_x = 12 + (int)((i * 38 + (dino->tick_count * 4)) % 210);
+        pixel(dot_x, ground_y + 4, color_index(COL_LINE));
+        pixel(dot_x + 1, ground_y + 4, color_index(COL_LINE));
+    }
+
+    /* 绘制恐龙形象 (X = 32, Y = ground_y - dino->y) */
+    const int dino_x = 32;
+    int dino_base_y = ground_y - dino->y;
+    lv_color_t dino_color = dino->game_over ? COL_RED : COL_GREEN;
+
+    /* 恐龙身体像素块 */
+    box(layer, dino_x + 4, dino_base_y - 22, 12, 14, dino_color, dino_color, 0, 0);
+    box(layer, dino_x + 10, dino_base_y - 28, 10, 10, dino_color, dino_color, 0, 0);
+    box(layer, dino_x + 15, dino_base_y - 26, 2, 2, COL_BG, COL_BG, 0, 0);
+    box(layer, dino_x + 16, dino_base_y - 18, 5, 3, dino_color, dino_color, 0, 0);
+    box(layer, dino_x, dino_base_y - 18, 5, 5, dino_color, dino_color, 0, 0);
+
+    /* 奔跑步伐动画 (双腿交替摆动) */
+    if (dino->is_jumping || dino->y > 0) {
+        box(layer, dino_x + 6, dino_base_y - 8, 3, 5, dino_color, dino_color, 0, 0);
+        box(layer, dino_x + 12, dino_base_y - 6, 3, 3, dino_color, dino_color, 0, 0);
+    } else {
+        bool leg_alt = (dino->tick_count % 4) < 2;
+        box(layer, dino_x + 6, dino_base_y - 8, 3, leg_alt ? 8 : 4, dino_color, dino_color, 0, 0);
+        box(layer, dino_x + 12, dino_base_y - 8, 3, leg_alt ? 4 : 8, dino_color, dino_color, 0, 0);
+    }
+
+    /* 绘制仙人掌障碍物 */
+    for (i = 0; i < DINO_OBSTACLE_MAX; ++i) {
+        if (!dino->obstacles[i].active) continue;
+        int ox = dino->obstacles[i].x;
+        int ow = dino->obstacles[i].w;
+        int oh = dino->obstacles[i].h;
+        if (ox > -20 && ox < 240) {
+            box(layer, ox + 3, ground_y - oh, ow - 6 > 4 ? ow - 6 : 4, oh, COL_ORANGE, lv_color_hex(0xbc633e), 1, 0);
+            if (oh > 16) {
+                box(layer, ox, ground_y - oh + 6, 4, 3, COL_ORANGE, COL_ORANGE, 0, 0);
+                box(layer, ox, ground_y - oh + 4, 2, 5, COL_ORANGE, COL_ORANGE, 0, 0);
+                box(layer, ox + ow - 4, ground_y - oh + 8, 4, 3, COL_ORANGE, COL_ORANGE, 0, 0);
+                box(layer, ox + ow - 2, ground_y - oh + 6, 2, 5, COL_ORANGE, COL_ORANGE, 0, 0);
+            }
+        }
+    }
+
+    /* 游戏结束弹窗 */
+    if (dino->game_over) {
+        box(layer, 36, 115, 168, 88, lv_color_hex(0x181c22), COL_RED, 2, 0);
+        text(layer, 36, 125, 168, COL_RED, "挑战结束", true, LV_TEXT_ALIGN_CENTER);
+        text(layer, 36, 150, 168, COL_INK, "短按 OK 重新开始", false, LV_TEXT_ALIGN_CENTER);
+        text(layer, 36, 170, 168, COL_DIM, "长按 OK 返回菜单", false, LV_TEXT_ALIGN_CENTER);
+    }
+
+    /* 底部操作提示 */
+    text(layer, 8, 292, 224, COL_DIM, "UP/OK:跳跃  DOWN:俯冲  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
+}
+
 static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char quota_buf[48];
@@ -493,7 +697,7 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         }
     }
 
-    text(layer, 8, 298, 224, COL_DIM, "按 UP 键切换额度与伴侣", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 298, 224, COL_DIM, "长按功能键返回主菜单", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -729,12 +933,16 @@ static void redraw(void)
     memset(s_canvas_buffer + I4_PALETTE_BYTES, 0, sizeof(s_canvas_buffer) - I4_PALETTE_BYTES);
     draw_status_bar(layer, &s_snapshot);
     switch (s_snapshot.page) {
+    case BUDDY_PAGE_LAUNCHER: draw_launcher(layer, &s_snapshot); break;
+    case BUDDY_PAGE_HOME: draw_home(layer, &s_snapshot); break;
+    case BUDDY_PAGE_GAME_SNAKE: draw_game_snake(layer, &s_snapshot); break;
+    case BUDDY_PAGE_GAME_DINO: draw_game_dino(layer, &s_snapshot); break;
     case BUDDY_PAGE_LIMITS: draw_limits(layer, &s_snapshot); break;
     case BUDDY_PAGE_TOOLS: draw_tools_breakdown(layer, &s_snapshot); break;
     case BUDDY_PAGE_PET: draw_companion(layer, &s_snapshot); break;
     case BUDDY_PAGE_INFO: draw_info(layer, &s_snapshot); break;
     case BUDDY_PAGE_SETTINGS: draw_settings(layer, &s_snapshot); break;
-    default: draw_home(layer, &s_snapshot); break;
+    default: draw_launcher(layer, &s_snapshot); break;
     }
     draw_overlay(layer, &s_snapshot);
     lv_obj_invalidate(s_canvas);

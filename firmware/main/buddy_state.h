@@ -41,6 +41,7 @@ typedef struct {
     buddy_settings_item_t settings_selection;
     buddy_reset_item_t reset_selection;
     buddy_menu_item_t menu_selection;
+    uint8_t launcher_selection;
     uint8_t pet_page;
     uint8_t info_page;
     bool menu_open;

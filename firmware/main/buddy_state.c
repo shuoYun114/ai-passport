@@ -1,4 +1,5 @@
 #include "buddy_state.h"
+#include "buddy_games.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -244,7 +245,7 @@ static void buddy_settings_click(buddy_state_t *state, buddy_key_t key,
         break;
     case BUDDY_SETTINGS_BACK:
     case BUDDY_SETTINGS_COUNT:
-        state->page = BUDDY_PAGE_HOME;
+        state->page = BUDDY_PAGE_LAUNCHER;
         buddy_set_ui_refresh(action);
         break;
     }
@@ -283,6 +284,54 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
         buddy_set_ui_refresh(action);
         return;
     }
+
+    /* 主大菜单导航 */
+    if (state->page == BUDDY_PAGE_LAUNCHER) {
+        if (key == BUDDY_KEY_UP) {
+            state->launcher_selection = (buddy_launcher_item_t)(
+                (state->launcher_selection + BUDDY_LAUNCHER_COUNT - 1) % BUDDY_LAUNCHER_COUNT);
+            buddy_set_ui_refresh(action);
+        } else if (key == BUDDY_KEY_DOWN) {
+            state->launcher_selection =
+                (buddy_launcher_item_t)((state->launcher_selection + 1) % BUDDY_LAUNCHER_COUNT);
+            buddy_set_ui_refresh(action);
+        } else if (key == BUDDY_KEY_OK) {
+            switch (state->launcher_selection) {
+            case BUDDY_LAUNCHER_AI_MONITOR:
+                state->page = BUDDY_PAGE_HOME;
+                break;
+            case BUDDY_LAUNCHER_GAME_SNAKE:
+                buddy_snake_reset();
+                state->page = BUDDY_PAGE_GAME_SNAKE;
+                break;
+            case BUDDY_LAUNCHER_GAME_DINO:
+                buddy_dino_reset();
+                state->page = BUDDY_PAGE_GAME_DINO;
+                break;
+            case BUDDY_LAUNCHER_SETTINGS:
+                state->page = BUDDY_PAGE_SETTINGS;
+                state->settings_selection = BUDDY_SETTINGS_BRIGHTNESS;
+                break;
+            default:
+                break;
+            }
+            buddy_set_ui_refresh(action);
+        }
+        return;
+    }
+
+    /* 小游戏按键分发 */
+    if (state->page == BUDDY_PAGE_GAME_SNAKE) {
+        buddy_snake_key(key);
+        buddy_set_ui_refresh(action);
+        return;
+    }
+    if (state->page == BUDDY_PAGE_GAME_DINO) {
+        buddy_dino_key(key);
+        buddy_set_ui_refresh(action);
+        return;
+    }
+
     if (state->page == BUDDY_PAGE_SETTINGS) {
         buddy_settings_click(state, key, action);
     } else if (key == BUDDY_KEY_UP) {
@@ -476,7 +525,8 @@ void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *set
 
     memset(state, 0, sizeof(*state));
     state->connection = BUDDY_CONNECTION_OFFLINE;
-    state->page = BUDDY_PAGE_HOME;
+    state->page = BUDDY_PAGE_LAUNCHER;
+    state->launcher_selection = BUDDY_LAUNCHER_AI_MONITOR;
     state->heartbeat_stale = true;
     state->brightness_level = 4;
     state->transcript_enabled = true;
@@ -656,13 +706,27 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
     case BUDDY_EVENT_KEY_LONG:
         if (event->key == BUDDY_KEY_OK && state->confirmation == BUDDY_CONFIRM_NONE &&
             !buddy_has_prompt(state)) {
-            state->menu_open = !state->menu_open;
-            state->menu_selection = BUDDY_MENU_SETTINGS;
-            state->reset_open = false;
-            buddy_set_ui_refresh(action);
+            if (state->page != BUDDY_PAGE_LAUNCHER) {
+                /* 无论在任何页面或游戏中，长按功能键无条件平滑返回主大菜单 */
+                state->menu_open = false;
+                state->reset_open = false;
+                state->page = BUDDY_PAGE_LAUNCHER;
+                buddy_set_ui_refresh(action);
+            } else {
+                /* 在主大菜单下长按功能键：进入屏幕休眠以省电 */
+                state->screen_off = true;
+                if (action != NULL) {
+                    action->type = BUDDY_ACTION_SCREEN_OFF;
+                }
+            }
         }
         break;
     case BUDDY_EVENT_TICK:
+        if (state->page == BUDDY_PAGE_GAME_SNAKE) {
+            buddy_snake_tick();
+        } else if (state->page == BUDDY_PAGE_GAME_DINO) {
+            buddy_dino_tick();
+        }
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_NONE:
@@ -698,6 +762,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->settings_selection = state->settings_selection;
     snapshot->reset_selection = state->reset_selection;
     snapshot->menu_selection = state->menu_selection;
+    snapshot->launcher_selection = state->launcher_selection;
     snapshot->pet_page = state->pet_page;
     snapshot->info_page = state->info_page;
     snapshot->menu_open = state->menu_open;

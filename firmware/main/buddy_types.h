@@ -36,15 +36,26 @@ typedef enum {
 } buddy_character_t;
 
 typedef enum {
-    BUDDY_PAGE_HOME,
+    BUDDY_PAGE_LAUNCHER = 0,    /* 系统大菜单 (Launcher) */
+    BUDDY_PAGE_HOME,            /* AI 监控中心 (Tokens & 额度主屏) */
     BUDDY_PAGE_STATUS = BUDDY_PAGE_HOME,
-    BUDDY_PAGE_LIMITS,
-    BUDDY_PAGE_TOOLS,
+    BUDDY_PAGE_LIMITS,          /* 配额中心 */
+    BUDDY_PAGE_TOOLS,           /* 工具明细 */
+    BUDDY_PAGE_GAME_SNAKE,      /* 经典贪吃蛇小游戏 */
+    BUDDY_PAGE_GAME_DINO,       /* 跳跳恐龙跑酷小游戏 */
     BUDDY_PAGE_PET,
     BUDDY_PAGE_INFO,
     BUDDY_PAGE_TRANSCRIPT,
     BUDDY_PAGE_SETTINGS,
 } buddy_page_t;
+
+typedef enum {
+    BUDDY_LAUNCHER_ITEM_AI_MONITOR = 0, /* AI 监控中心 */
+    BUDDY_LAUNCHER_ITEM_GAME_SNAKE,     /* 经典贪吃蛇 */
+    BUDDY_LAUNCHER_ITEM_GAME_DINO,      /* 跳跳恐龙 */
+    BUDDY_LAUNCHER_ITEM_SETTINGS,       /* 系统与设置 */
+    BUDDY_LAUNCHER_ITEM_COUNT,
+} buddy_launcher_item_t;
 
 typedef enum {
     BUDDY_MENU_SETTINGS,
@@ -303,6 +314,7 @@ typedef struct {
     buddy_settings_item_t settings_selection;
     buddy_reset_item_t reset_selection;
     buddy_menu_item_t menu_selection;
+    uint8_t launcher_selection;
     uint8_t pet_page;
     uint8_t info_page;
     bool menu_open;
