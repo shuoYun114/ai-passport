@@ -1,8 +1,9 @@
-﻿#include "buddy_games.h"
+#include "buddy_games.h"
 
 #include <stdlib.h>
 #include <string.h>
 #include "esp_system.h"
+#include "esp_random.h"
 
 static buddy_game_snake_t s_snake;
 static buddy_game_dino_t s_dino;
