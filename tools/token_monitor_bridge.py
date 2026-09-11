@@ -176,10 +176,10 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
             if not connected_once:
                 print(f"正在发起连接与配对: {device.name or device.address} ...", flush=True)
                 print(">>> 提示：若设备屏幕出现 6 位 PIN 码，请在 Windows 弹窗中输入。配对等待已延长至 120 秒。", flush=True)
-            else:
-                print(f"正在重新连接: {device.name or device.address} ...", flush=True)
-
-            async with BleakClient(device, pair=True, timeout=120.0) as client:
+            # 注意：在 Windows 上切勿传递 pair=True，因为 Bleak 的底层 WinRT 实现仅支持 CONFIRM_ONLY，
+            # 会与单片机硬件的 PIN 码显示机制冲突并导致 2 秒内瞬间断开连接！
+            # 移除 pair=True 后由 Windows 操作系统原生安全栈处理配对，PIN 码将稳定常驻显示。
+            async with BleakClient(device, timeout=60.0) as client:
                 await client.start_notify(NUS_TX_UUID, lambda _s, _d: None)
                 print("[OK] 设备已成功连接并绑定！Token Monitor 数据流已上线！\n", flush=True)
                 connected_once = True
