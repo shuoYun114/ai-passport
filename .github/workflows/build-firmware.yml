@@ -48,7 +48,7 @@ jobs:
             set -e
             cd firmware
             idf.py build
-            idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin
+            idf.py merge-bin -o FoloToy-AI-Passport-full.bin
             python3 ../tools/verify_firmware.py build
 
       - name: Set artifact name
