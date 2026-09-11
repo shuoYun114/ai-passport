@@ -23,6 +23,9 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
 
       - name: Set up ccache
         uses: actions/cache@v4
@@ -38,11 +41,11 @@ jobs:
         with:
           esp_idf_version: v5.5.3
           target: esp32c3
-          path: firmware
           extra_docker_args: >-
             -e CCACHE_DIR=/app/${{ github.repository }}/.ccache
             -e IDF_CCACHE_ENABLE=1
           command: |
+            set -e
             cd firmware
             idf.py build
             idf.py merge-bin -o build/FoloToy-AI-Passport-full.bin
