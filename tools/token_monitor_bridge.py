@@ -9,11 +9,14 @@ from __future__ import annotations
 import argparse
 import asyncio
 from datetime import datetime
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
 import logging
 import os
 from pathlib import Path
+import socket
 import sys
+import threading
 import time
 from typing import Any, Dict, Optional
 
@@ -28,6 +31,408 @@ NUS_TX_UUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e"
 
 HEARTBEAT_SECONDS = 10.0
 TOKEN_REFRESH_SECONDS = 30.0
+
+PROFILE_CONFIG_FILE = Path(__file__).resolve().parent / "profile_config.json"
+_active_ble_client: Optional[Any] = None
+_active_event_loop: Optional[asyncio.AbstractEventLoop] = None
+_web_server_started = False
+
+
+def get_local_ip() -> str:
+    """获取本机在局域网中的真实 IP 地址。"""
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
+    except Exception:
+        return "192.168.48.156"
+
+
+def get_profile_config() -> dict:
+    """读取保存的个人主页档案配置。"""
+    default_cfg = {"name": "syhx114514", "owner": "syhx114514@gmail.com"}
+    if PROFILE_CONFIG_FILE.exists():
+        try:
+            data = json.loads(PROFILE_CONFIG_FILE.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                return {
+                    "name": str(data.get("name") or default_cfg["name"])[:30],
+                    "owner": str(data.get("owner") or default_cfg["owner"])[:30],
+                }
+        except Exception:
+            pass
+    return default_cfg
+
+
+def save_profile_config(name: str, owner: str) -> None:
+    """持久化保存个人主页档案。"""
+    data = {"name": name[:30], "owner": owner[:30]}
+    PROFILE_CONFIG_FILE.write_text(json.dumps(data, indent=2, ensure_ascii=False), encoding="utf-8")
+
+
+def trigger_profile_sync(name: str, owner: str) -> bool:
+    """当 Web 端修改个人信息后，通过活跃的 BLE 连接秒级推送到副屏。"""
+    global _active_ble_client, _active_event_loop
+    if _active_ble_client and _active_ble_client.is_connected and _active_event_loop:
+        try:
+            p_name = json.dumps({"name": name}, ensure_ascii=False).encode("utf-8") + b"\n"
+            p_owner = json.dumps({"owner": owner}, ensure_ascii=False).encode("utf-8") + b"\n"
+            asyncio.run_coroutine_threadsafe(send_payload(_active_ble_client, p_name), _active_event_loop)
+            asyncio.run_coroutine_threadsafe(send_payload(_active_ble_client, p_owner), _active_event_loop)
+            print(f"[Web配置] 档案已通过 BLE 实时下发副屏: Name={name}, Owner={owner}", flush=True)
+            return True
+        except Exception as e:
+            logger.error(f"BLE 下发失败: {e}")
+    return False
+
+
+HTML_PAGE = """<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>AI Passport · 个人主页档案配置</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: #0c0e12;
+    color: #e2e8f0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+    padding: 24px 16px;
+    display: flex;
+    justify-content: center;
+  }
+  .container {
+    width: 100%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .header {
+    text-align: center;
+    padding: 10px 0 6px 0;
+  }
+  .badge {
+    display: inline-block;
+    padding: 4px 12px;
+    background: rgba(225, 123, 82, 0.15);
+    color: #e17b52;
+    border: 1px solid #e17b52;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .title {
+    font-size: 21px;
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+  }
+  .subtitle {
+    font-size: 13px;
+    color: #8a99a8;
+    margin-top: 4px;
+  }
+  .card {
+    background: #14171f;
+    border: 1px solid #232936;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f1c75b;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::before {
+    content: "";
+    display: inline-block;
+    width: 3px;
+    height: 14px;
+    background: #f1c75b;
+    border-radius: 2px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #cbd5e1;
+    margin-bottom: 6px;
+  }
+  .input-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 4px;
+  }
+  input[type="text"] {
+    width: 100%;
+    background: #090b0e;
+    border: 1px solid #2e384d;
+    border-radius: 8px;
+    padding: 12px 14px;
+    color: #ffffff;
+    font-size: 15px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="text"]:focus {
+    border-color: #e17b52;
+    box-shadow: 0 0 0 2px rgba(225, 123, 82, 0.2);
+  }
+  .btn-submit {
+    width: 100%;
+    background: linear-gradient(135deg, #e17b52 0%, #c45d35 100%);
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(225, 123, 82, 0.35);
+    transition: transform 0.1s, opacity 0.2s;
+  }
+  .btn-submit:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  .status-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: #090b0e;
+    border-radius: 8px;
+    border: 1px solid #1e2430;
+    font-size: 12px;
+  }
+  .status-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #64c987;
+    margin-right: 6px;
+    box-shadow: 0 0 8px #64c987;
+  }
+  .alert {
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+    margin-bottom: 14px;
+  }
+  .alert-success {
+    background: rgba(100, 201, 135, 0.15);
+    border: 1px solid #64c987;
+    color: #64c987;
+  }
+  .alert-error {
+    background: rgba(239, 75, 56, 0.15);
+    border: 1px solid #ef4b38;
+    color: #ef4b38;
+  }
+  .footer {
+    text-align: center;
+    font-size: 11px;
+    color: #475569;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="badge">AI PASSPORT CONFIG</div>
+    <div class="title">个人智能主页档案设置</div>
+    <div class="subtitle">修改后将通过蓝牙即时同步至副屏设备</div>
+  </div>
+
+  <div class="card">
+    <div class="status-box">
+      <div style="display: flex; align-items: center;">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">蓝牙服务在线</span>
+      </div>
+      <span style="color: #64748b;" id="devId">C3-32EAAA</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">通行证基本身份</div>
+    <form id="profileForm">
+      <div class="form-group">
+        <label for="name">极客昵称 / 姓名</label>
+        <input type="text" id="name" name="name" maxlength="30" placeholder="例如: syhx114514" required>
+        <div class="input-desc">展示在副屏工牌卡片中央顶部 (最多30字符)</div>
+      </div>
+
+      <div class="form-group">
+        <label for="owner">通行证账号 / 邮箱</label>
+        <input type="text" id="owner" name="owner" maxlength="30" placeholder="例如: user@gmail.com" required>
+        <div class="input-desc">展示在副屏核心资产与账号一栏 (最多30字符)</div>
+      </div>
+
+      <div id="alertBox" class="alert"></div>
+
+      <button type="submit" class="btn-submit" id="btnSubmit">保存并同步至副屏</button>
+    </form>
+  </div>
+
+  <div class="footer">
+    FoloToy AI Passport · 极客桌面副屏控制台
+  </div>
+</div>
+
+<script>
+  fetch('/api/profile')
+    .then(r => r.json())
+    .then(data => {
+      if (data.name) document.getElementById('name').value = data.name;
+      if (data.owner) document.getElementById('owner').value = data.owner;
+      const dot = document.getElementById('statusDot');
+      const txt = document.getElementById('statusText');
+      if (data.connected) {
+        dot.style.background = '#64c987';
+        dot.style.boxShadow = '0 0 8px #64c987';
+        txt.textContent = '设备已连接 · 实时同步中';
+      } else {
+        dot.style.background = '#f1c75b';
+        dot.style.boxShadow = 'none';
+        txt.textContent = '设备待命 · 保存后自动下发';
+      }
+    })
+    .catch(err => console.error(err));
+
+  document.getElementById('profileForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = document.getElementById('btnSubmit');
+    const alertBox = document.getElementById('alertBox');
+    btn.disabled = true;
+    btn.textContent = '正在同步至设备...';
+    alertBox.style.display = 'none';
+
+    const name = document.getElementById('name').value.trim();
+    const owner = document.getElementById('owner').value.trim();
+
+    try {
+      const res = await fetch('/api/profile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, owner })
+      });
+      const ret = await res.json();
+      if (ret.ok) {
+        alertBox.className = 'alert alert-success';
+        alertBox.textContent = '✓ 档案保存成功！副屏已即时刷新。';
+        alertBox.style.display = 'block';
+      } else {
+        throw new Error(ret.error || '保存失败');
+      }
+    } catch (err) {
+      alertBox.className = 'alert alert-error';
+      alertBox.textContent = '✗ 同步异常: ' + err.message;
+      alertBox.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '保存并同步至副屏';
+    }
+  });
+</script>
+</body>
+</html>
+"""
+
+
+class ProfileWebHandler(BaseHTTPRequestHandler):
+    def log_message(self, format: str, *args: Any) -> None:
+        pass  # 忽略默认访问日志，保持输出整洁
+
+    def do_GET(self) -> None:
+        if self.path == "/profile" or self.path == "/":
+            content = HTML_PAGE.encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "text/html; charset=utf-8")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+        elif self.path == "/api/profile":
+            cfg = get_profile_config()
+            global _active_ble_client
+            conn = bool(_active_ble_client and _active_ble_client.is_connected)
+            data = {"ok": True, "name": cfg["name"], "owner": cfg["owner"], "connected": conn}
+            content = json.dumps(data, ensure_ascii=False).encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(content)))
+            self.end_headers()
+            self.wfile.write(content)
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+    def do_POST(self) -> None:
+        if self.path == "/api/profile":
+            length = int(self.headers.get("Content-Length", 0))
+            body = self.rfile.read(length)
+            try:
+                data = json.loads(body.decode("utf-8"))
+                name = str(data.get("name", "")).strip()[:30]
+                owner = str(data.get("owner", "")).strip()[:30]
+                if not name:
+                    name = "syhx114514"
+                if not owner:
+                    owner = "syhx114514@gmail.com"
+
+                save_profile_config(name, owner)
+                synced = trigger_profile_sync(name, owner)
+                res_data = {"ok": True, "name": name, "owner": owner, "synced": synced}
+                content = json.dumps(res_data, ensure_ascii=False).encode("utf-8")
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            except Exception as e:
+                err_data = {"ok": False, "error": str(e)}
+                content = json.dumps(err_data).encode("utf-8")
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+        else:
+            self.send_response(404)
+            self.end_headers()
+
+
+def start_profile_web_server(port: int = 8765) -> None:
+    """在后台线程中启动轻量级 Web 配置服务器。"""
+    global _web_server_started
+    if _web_server_started:
+        return
+    try:
+        server = ThreadingHTTPServer(("0.0.0.0", port), ProfileWebHandler)
+        t = threading.Thread(target=server.serve_forever, daemon=True)
+        t.start()
+        _web_server_started = True
+        local_ip = get_local_ip()
+        print(f"[Web配置] 个人主页扫码配置服务已启动: http://{local_ip}:{port}/profile", flush=True)
+    except Exception as e:
+        logger.warning(f"无法启动 Web 配置服务器: {e}")
 
 
 def build_firmware_payload(snap: TokenMonitorSnapshot, completed: bool = False) -> bytes:
@@ -173,6 +578,10 @@ def print_simulated_screen(snap: TokenMonitorSnapshot) -> None:
 
 
 async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
+    start_profile_web_server(port=8765)
+    global _active_event_loop, _active_ble_client
+    _active_event_loop = asyncio.get_running_loop()
+
     snap = collect_all_tools()
     payload = build_firmware_payload(snap)
 
@@ -199,6 +608,7 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                 await client.start_notify(NUS_TX_UUID, lambda _s, _d: None)
                 print("[OK] 设备已成功连接并绑定！Token Monitor 数据流已上线！\n", flush=True)
                 connected_once = True
+                _active_ble_client = client
 
                 # 同步时钟与工牌个人档案
                 tz_offset = int(time.mktime(time.localtime()) - time.mktime(time.gmtime()))
@@ -206,11 +616,9 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                     client,
                     json.dumps({"time": [int(time.time()), tz_offset]}).encode() + b"\n",
                 )
-                init_snap = collect_all_tools()
-                u_name = init_snap.user_name.split("@")[0] if init_snap.user_name else "syhx114514"
-                u_owner = init_snap.user_name if init_snap.user_name else "syhx114514@gmail.com"
-                await send_payload(client, json.dumps({"name": u_name}).encode() + b"\n")
-                await send_payload(client, json.dumps({"owner": u_owner}).encode() + b"\n")
+                profile = get_profile_config()
+                await send_payload(client, json.dumps({"name": profile["name"]}).encode() + b"\n")
+                await send_payload(client, json.dumps({"owner": profile["owner"]}).encode() + b"\n")
 
                 last_heartbeat = 0.0
                 last_refresh = 0.0

@@ -46,6 +46,7 @@ typedef struct {
     uint8_t info_page;
     bool menu_open;
     bool reset_open;
+    bool profile_qr_open;
     bool transcript_enabled;
     bool screen_off;
     uint8_t brightness_level;

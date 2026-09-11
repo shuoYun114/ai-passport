@@ -323,7 +323,7 @@ static void on_key(bsp_btn_t button, bsp_btn_ev_t event, void *context)
     buddy_control_event_t control = {0};
 
     (void)context;
-    if ((event != BSP_BTN_CLICK && event != BSP_BTN_LONG) || s_button_queue == NULL) {
+    if ((event != BSP_BTN_CLICK && event != BSP_BTN_LONG && event != BSP_BTN_DOUBLE) || s_button_queue == NULL) {
         return;
     }
     control.type = BUDDY_CONTROL_KEY;
@@ -476,6 +476,8 @@ static bool buddy_translate_key(const buddy_control_event_t *control, buddy_even
         event->type = BUDDY_EVENT_KEY_CLICK;
     } else if (control->data.key.event == BSP_BTN_LONG) {
         event->type = BUDDY_EVENT_KEY_LONG;
+    } else if (control->data.key.event == BSP_BTN_DOUBLE) {
+        event->type = BUDDY_EVENT_KEY_DOUBLE;
     } else {
         return false;
     }

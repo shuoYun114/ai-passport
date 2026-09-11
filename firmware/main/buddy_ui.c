@@ -9,6 +9,7 @@
 #include "buddy_sprite.h"
 #include "buddy_text_layout.h"
 #include "buddy_games.h"
+#include "qrcode.h"
 #include "lvgl.h"
 
 #define UI_W 240
@@ -465,6 +466,57 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:选择  OK:进入  长按:休眠", false, LV_TEXT_ALIGN_CENTER);
 }
 
+static void draw_profile_qr_overlay(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    (void)s;
+    QRCode qrcode;
+    uint8_t qrcodeBytes[256];
+    qrcode_initText(&qrcode, qrcodeBytes, 3, ECC_LOW, "http://192.168.48.156:8765/profile");
+
+    /* 半透明点阵遮罩效果 */
+    for (int y = BUDDY_UI_STATUS_H; y < BUDDY_UI_ACTION_Y; ++y) {
+        for (int x = (y & 1); x < UI_W; x += 2) {
+            uint8_t current = buddy_i4_get_pixel(s_surface.pixels, UI_W, (uint16_t)x, (uint16_t)y);
+            if (current != 0) {
+                buddy_i4_set_pixel(s_surface.pixels, UI_W, (uint16_t)x, (uint16_t)y, 15);
+            }
+        }
+    }
+
+    /* 居中悬浮卡片 (X: 18, Y: 46, W: 204, H: 236) */
+    box(layer, 18, 46, 204, 236, lv_color_hex(0x16181D), COL_ORANGE, 2, 4);
+    text(layer, 18, 54, 204, COL_ORANGE, "扫码修改个人信息", true, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 28, 73, 184, lv_color_hex(0x282D35));
+
+    /* 二维码纯白背景底板 (29 * 4 = 116px，加每边 8px 静区 = 132px，居中 X: 54, Y: 80) */
+    const int qr_box_x = 54;
+    const int qr_box_y = 80;
+    const int qr_box_size = 132;
+    box(layer, qr_box_x, qr_box_y, qr_box_size, qr_box_size, lv_color_hex(0xFFFFFF), lv_color_hex(0xFFFFFF), 0, 0);
+
+    /* 绘制二维码像素点 (黑色模块) */
+    const int start_x = qr_box_x + 8;
+    const int start_y = qr_box_y + 8;
+    uint8_t bg_idx = color_index(COL_BG);
+    for (uint8_t qy = 0; qy < qrcode.size; ++qy) {
+        for (uint8_t qx = 0; qx < qrcode.size; ++qx) {
+            if (qrcode_getModule(&qrcode, qx, qy)) {
+                int px = start_x + (int)qx * 4;
+                int py = start_y + (int)qy * 4;
+                for (int dy = 0; dy < 4; ++dy) {
+                    for (int dx = 0; dx < 4; ++dx) {
+                        pixel(px + dx, py + dy, bg_idx);
+                    }
+                }
+            }
+        }
+    }
+
+    /* 底部操作说明 */
+    text(layer, 18, 222, 204, COL_INK, "手机扫码即可直接修改", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 18, 246, 204, COL_DIM, "短按 OK 键关闭弹窗", false, LV_TEXT_ALIGN_CENTER);
+}
+
 static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char token_buf[16];
@@ -541,7 +593,12 @@ static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     text(layer, 72, 264, 150, COL_BLUE, cost_buf, false, LV_TEXT_ALIGN_LEFT);
 
     /* 底部操作提示 */
-    text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:换伴侣  OK:互动  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 8, 296, 224, COL_DIM, "双击OK扫码修改  长按返回菜单", false, LV_TEXT_ALIGN_CENTER);
+
+    /* 若双击打开了二维码弹窗，则覆盖绘制二维码悬浮窗 */
+    if (s->profile_qr_open) {
+        draw_profile_qr_overlay(layer, s);
+    }
 }
 
 static void draw_game_snake(lv_layer_t *layer, const buddy_ui_snapshot_t *s)

@@ -11,6 +11,7 @@ idf_component_register(
          "buddy_character.c"
         "buddy_ui.c"
         "buddy_games.c"
+        "qrcode.c"
         "buddy_font_zh_14.c"
         "buddy_font_zh_16.c"
         "buddy_i4.c"

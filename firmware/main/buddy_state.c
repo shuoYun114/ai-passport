@@ -323,8 +323,13 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
         return;
     }
 
-    /* 个人主页按键交互：UP/DOWN 切换伴侣形象，短按 OK 触发伴侣欢呼互动 */
+    /* 个人主页按键交互：如果二维码开启则短按任意键关闭；否则 UP/DOWN 切换伴侣形象，短按 OK 触发伴侣欢呼互动 */
     if (state->page == BUDDY_PAGE_PROFILE) {
+        if (state->profile_qr_open) {
+            state->profile_qr_open = false;
+            buddy_set_ui_refresh(action);
+            return;
+        }
         if (key == BUDDY_KEY_UP) {
             state->species = (uint8_t)((state->species + 2U) % 3U);
             buddy_set_ui_refresh(action);
@@ -729,6 +734,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
                 /* 无论在任何页面或游戏中，长按功能键无条件平滑返回主大菜单 */
                 state->menu_open = false;
                 state->reset_open = false;
+                state->profile_qr_open = false;
                 state->page = BUDDY_PAGE_LAUNCHER;
                 buddy_set_ui_refresh(action);
             } else {
@@ -738,6 +744,21 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
                     action->type = BUDDY_ACTION_SCREEN_OFF;
                 }
             }
+        }
+        break;
+    case BUDDY_EVENT_KEY_DOUBLE:
+        if (state->screen_off) {
+            state->screen_off = false;
+            if (action != NULL) {
+                action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
+                action->brightness_percent =
+                    (uint8_t)(20U + state->brightness_level * 20U);
+            }
+            break;
+        }
+        if (state->page == BUDDY_PAGE_PROFILE) {
+            state->profile_qr_open = !state->profile_qr_open;
+            buddy_set_ui_refresh(action);
         }
         break;
     case BUDDY_EVENT_TICK:
@@ -786,6 +807,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->info_page = state->info_page;
     snapshot->menu_open = state->menu_open;
     snapshot->reset_open = state->reset_open;
+    snapshot->profile_qr_open = state->profile_qr_open;
     snapshot->transcript_enabled = state->transcript_enabled;
     snapshot->brightness_level = state->brightness_level;
     snapshot->screen_off = state->screen_off;
