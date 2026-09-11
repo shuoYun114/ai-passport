@@ -94,19 +94,42 @@ async def find_device(device_name: Optional[str]) -> Any:
     """扫描附近的 AI Passport 蓝牙设备。"""
     from bleak import BleakScanner
 
-    print("正在扫描附近的 AI Passport 设备...", flush=True)
-    devices = await BleakScanner.discover(timeout=8.0, service_uuids=[NUS_SERVICE_UUID])
+    print("正在扫描附近的蓝牙设备...", flush=True)
+    # 使用广谱扫描避免 Windows 驱动过滤掉 Scan Response 中的 UUID
+    devices = await BleakScanner.discover(timeout=6.0)
+    matched = []
+    all_names = []
+
     for dev in devices:
         name = dev.name or ""
-        if device_name and (name == device_name or dev.address == device_name):
-            return dev
-        if not device_name and (
-            name.startswith("Codex-")
-            or name.startswith("Passport-")
-            or "Passport" in name
-        ):
-            return dev
-    raise RuntimeError("未搜索到 AI Passport 蓝牙设备，请确认设备已开机并在通信范围内。")
+        if name:
+            all_names.append(f"{name} ({dev.address})")
+        if device_name:
+            if name.lower() == device_name.lower() or dev.address.lower() == device_name.lower():
+                matched.append(dev)
+        else:
+            n_lower = name.lower()
+            if (
+                n_lower.startswith("codex-")
+                or n_lower.startswith("passport-")
+                or "passport" in n_lower
+                or "folotoy" in n_lower
+                or "buddy" in n_lower
+            ):
+                matched.append(dev)
+
+    if matched:
+        chosen = matched[0]
+        print(f"[OK] 找到目标设备: {chosen.name or '未知'} [{chosen.address}]", flush=True)
+        return chosen
+
+    hint = "\n   - " + "\n   - ".join(all_names) if all_names else " (未搜到任何带名称的蓝牙设备)"
+    raise RuntimeError(
+        f"未自动识别到 AI Passport 设备。\n"
+        f"附近检测到的设备列表:{hint}\n\n"
+        f"提示：若设备名称不在预设列表中，可使用参数指定：\n"
+        f"   python tools/token_monitor_bridge.py --device \"您的设备名称或MAC\""
+    )
 
 
 def print_simulated_screen(snap: TokenMonitorSnapshot) -> None:
