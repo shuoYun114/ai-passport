@@ -207,6 +207,11 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                         p = build_firmware_payload(snap)
                         await send_payload(client, p)
                         last_heartbeat = now
+                        rem = 100 - snap.primary_used_percent
+                        print(
+                            f"[{datetime.now().strftime('%H:%M:%S')}] 数据已同步至设备 (主力: {snap.primary_quota_label} 剩余 {rem}% | 运行任务: {snap.running_tasks})",
+                            flush=True,
+                        )
 
                     await asyncio.sleep(1.0)
 

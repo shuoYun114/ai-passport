@@ -42,6 +42,7 @@ env/
 htmlcov/
 *.tmp
 *.log
+logs/
 
 # 固件编译构建产物
 firmware/build/
