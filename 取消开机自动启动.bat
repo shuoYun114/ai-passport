@@ -1,9 +1,11 @@
 @echo off
-chcp 65001 >nul
-title å–æ¶ˆ AI Passport å¼€æœºè‡ªå¯
+rem ========================================================
+rem        È¡Ïû AI Passport ¿ª»ú×ÔÆô
+rem ========================================================
+title È¡Ïû AI Passport ¿ª»ú×ÔÆô
 
 echo ========================================================
-echo        æ­£åœ¨ç§»é™¤ AI Passport å¼€æœºè‡ªå¯é¡¹...
+echo        ÕıÔÚÒÆ³ı AI Passport ¿ª»ú×ÔÆôÏî...
 echo ========================================================
 
 python -c "
@@ -16,11 +18,11 @@ shortcut_vbs = startup_dir / 'AI_Passport_Silent_Bridge.vbs'
 if shortcut_vbs.exists():
     try:
         shortcut_vbs.unlink()
-        print(f'[OK] å·²æˆåŠŸç§»é™¤å¼€æœºè‡ªå¯æ–‡ä»¶: {shortcut_vbs}')
+        print(f'[OK] ÒÑ³É¹¦ÒÆ³ı¿ª»ú×ÔÆôÎÄ¼ş: {shortcut_vbs}')
     except Exception as e:
-        print(f'[-] ç§»é™¤å¤±è´¥: {e}')
+        print(f'[-] ÒÆ³ıÊ§°Ü: {e}')
 else:
-    print('[i] å¼€æœºè‡ªå¯ç›®å½•ä¸­æœªå‘ç° AI Passport å¯åŠ¨é¡¹ï¼Œæ— éœ€æ¸…ç†ã€‚')
+    print('[i] ¿ª»ú×ÔÆôÄ¿Â¼ÖĞÎ´·¢ÏÖ AI Passport Æô¶¯Ïî£¬ÎŞĞèÇåÀí¡£')
 "
 
 echo.

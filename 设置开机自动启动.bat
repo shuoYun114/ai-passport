@@ -1,9 +1,11 @@
 @echo off
-chcp 65001 >nul
-title è®¾ç½® AI Passport å¼€æœºè‡ªå¯
+rem ========================================================
+rem        ÉèÖÃ AI Passport ¿ª»ú×ÔÆô
+rem ========================================================
+title ÉèÖÃ AI Passport ¿ª»ú×ÔÆô
 
 echo ========================================================
-echo        æ­£åœ¨å°† AI Passport é™é»˜æœåŠ¡åŠ å…¥ Windows å¼€æœºè‡ªå¯...
+echo        ÕıÔÚ½« AI Passport ¾²Ä¬·şÎñ¼ÓÈë Windows ¿ª»ú×ÔÆô...
 echo ========================================================
 
 python -c "
@@ -11,21 +13,21 @@ import os, sys
 from pathlib import Path
 
 startup_dir = Path(os.environ['APPDATA']) / 'Microsoft' / 'Windows' / 'Start Menu' / 'Programs' / 'Startup'
-vbs_path = Path.cwd() / 'å¯åŠ¨åå°ç›‘æ§(å…CMDé»‘æ¡†).vbs'
+vbs_path = Path.cwd() / 'Æô¶¯ºóÌ¨¼à¿Ø(ÃâCMDºÚ¿ò).vbs'
 
 if not vbs_path.exists():
-    print(f'[-] æœªæ‰¾åˆ°å¯åŠ¨è„šæœ¬: {vbs_path}')
+    print(f'[-] Î´ÕÒµ½Æô¶¯½Å±¾: {vbs_path}')
     sys.exit(1)
 
-# åˆ›å»ºå¿«æ·æ–¹å¼ .vbs å‰¯æœ¬æˆ–å¿«æ·æ–¹å¼
 shortcut_vbs = startup_dir / 'AI_Passport_Silent_Bridge.vbs'
-content = f'''Set ws = CreateObject(\"WScript.Shell\")
-ws.Run \"\"\"{vbs_path}\"\"\", 0, False
+content = f'''Set ws = CreateObject("WScript.Shell")
+ws.Run """{vbs_path}""", 0, False
 '''
 shortcut_vbs.write_text(content, encoding='utf-8')
-print(f'[OK] å·²æˆåŠŸåœ¨å¼€æœºè‡ªå¯ç›®å½•åˆ›å»ºå¯åŠ¨é¡¹:')
+print(f'[OK] ÒÑ³É¹¦ÔÚ¿ª»ú×ÔÆôÄ¿Â¼´´½¨¿ì½İÆô¶¯Ïî:')
 print(f'     {shortcut_vbs}')
-print('\n[æˆåŠŸ] ä»¥åæ¯æ¬¡ç”µè„‘å¼€æœºï¼ŒAI Passport å°†åœ¨åå°è‡ªåŠ¨é™é»˜è¿æ¥ï¼Œæ— éœ€æ‰‹åŠ¨å¯åŠ¨ï¼')
+print('
+[³É¹¦] ÒÔºóµçÄÔ¿ª»ú£¬AI Passport ½«ÔÚºóÌ¨×Ô¶¯¾²Ä¬Á¬½Ó£¬ÎŞĞèÊÖ¶¯Æô¶¯£¡')
 "
 
 echo.

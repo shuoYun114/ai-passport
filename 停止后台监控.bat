@@ -1,9 +1,11 @@
 @echo off
-chcp 65001 >nul
-title åœæ­¢ AI Passport åå°ç›‘æ§æœåŠ¡
+rem ========================================================
+rem        Í£Ö¹ AI Passport ºóÌ¨¼à¿Ø·şÎñ
+rem ========================================================
+title Í£Ö¹ AI Passport ºóÌ¨·şÎñ
 
 echo ========================================================
-echo         æ­£åœ¨åœæ­¢ AI Passport åå°ç›‘æ§æœåŠ¡...
+echo        ÕıÔÚÍ£Ö¹ AI Passport ºóÌ¨¼à¿Ø·şÎñ...
 echo ========================================================
 
 python -c "
@@ -19,31 +21,30 @@ if pid_file.exists():
             p = psutil.Process(pid)
             p.terminate()
             p.wait(timeout=3)
-            print(f'[OK] å·²æˆåŠŸç»ˆæ­¢åå°æœåŠ¡è¿›ç¨‹ (PID: {pid})')
+            print(f'[OK] ÒÑ³É¹¦ÖÕÖ¹ºóÌ¨·şÎñ½ø³Ì (PID: {pid})')
             stopped = True
     except Exception as e:
-        print(f'[!] ç»ˆæ­¢ PID å‡ºé”™: {e}')
+        print(f'[!] ÖÕÖ¹ PID ³ö´í: {e}')
     finally:
         try:
             pid_file.unlink()
         except Exception:
             pass
 
-# è¾…åŠ©æ£€æŸ¥ï¼šæ¸…ç†æ®‹ç•™çš„ silent_bridge
 for proc in psutil.process_iter(['pid', 'name', 'cmdline']):
     try:
         cmdline = ' '.join(proc.info['cmdline'] or [])
         if 'silent_bridge.py' in cmdline:
             proc.terminate()
-            print(f'[OK] å·²æ¸…ç†æ®‹ç•™çš„å®ˆæŠ¤è¿›ç¨‹ (PID: {proc.info[\"pid\"]})')
+            print(f'[OK] ÒÑÇåÀí²ĞÁôÊØ»¤½ø³Ì (PID: {proc.info["pid"]})')
             stopped = True
     except Exception:
         pass
 
 if not stopped:
-    print('[i] å½“å‰æ²¡æœ‰æ­£åœ¨è¿è¡Œçš„ AI Passport åå°æœåŠ¡ã€‚')
+    print('[i] µ±Ç°Ã»ÓĞÕıÔÚÔËĞĞµÄ AI Passport ºóÌ¨·şÎñ¡£')
 else:
-    print('[OK] åå°æœåŠ¡å·²å½»åº•åœæ­¢ã€‚')
+    print('[OK] ºóÌ¨·şÎñÒÑ³¹µ×Í£Ö¹¡£')
 "
 
 echo.
