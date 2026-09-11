@@ -132,6 +132,15 @@ async def find_device(device_name: Optional[str]) -> Any:
     )
 
 
+def format_token_str(count: int) -> str:
+    """智能格式化 Token 计数 (如 850 / 45.2k / 122.7M)。"""
+    if count >= 1_000_000:
+        return f"{count / 1_000_000:.1f}M"
+    elif count >= 1_000:
+        return f"{count / 1_000:.1f}k"
+    return str(count)
+
+
 def print_simulated_screen(snap: TokenMonitorSnapshot) -> None:
     """在终端呈现 AI Passport 屏幕的 ASCII 预览。"""
     print("\n" + "=" * 52)
@@ -146,18 +155,21 @@ def print_simulated_screen(snap: TokenMonitorSnapshot) -> None:
     print("  [主力模型: " + snap.primary_quota_label + "]")
     rem1 = 100 - snap.primary_used_percent
     bar1 = int(round(rem1 / 5))
-    print(f"  剩余: {rem1:>3}%   [{'■' * bar1}{' ' * (20 - bar1)}]  (PRO 有效)")
+    pm_token_str = format_token_str(snap.tools[0].tokens_today) if snap.tools else "0"
+    print(f"  剩余: {rem1:>3}%   [{'■' * bar1}{' ' * (20 - bar1)}]  (用量 {pm_token_str})")
     print("-" * 52)
     print("  [辅助模型: " + snap.secondary_quota_label + "]")
     rem2 = 100 - snap.secondary_used_percent
     bar2 = int(round(rem2 / 5))
-    print(f"  剩余: {rem2:>3}%   [{'■' * bar2}{' ' * (20 - bar2)}]  (运行正常)")
+    sec_token_str = format_token_str(snap.tools[1].tokens_today) if len(snap.tools) > 1 else "0"
+    print(f"  剩余: {rem2:>3}%   [{'■' * bar2}{' ' * (20 - bar2)}]  (用量 {sec_token_str})")
     print("-" * 52)
-    print(f"  今日 Token 消耗: {snap.tokens_today:>10,} ({snap.tokens_today / 1000:.1f}k)")
-    print(f"  今日活跃会话:  {snap.total_tasks:>3} 个会话")
-    print(f"  订阅状态:      {snap.plan_name} (无额外按量扣费)")
-    print(f"  监控工具数:    {len(snap.tools):>3} 个核心模型")
+    print(f"  今日 Token 消耗: {snap.tokens_today:>10,} ({format_token_str(snap.tokens_today)})")
+    print(f"  今日预估费用:  ¥{snap.cost_today_cents / 100:.2f}")
+    print(f"  订阅状态:      {snap.plan_name}")
+    print(f"  监控数据源:    {snap.source}")
     print("=" * 52 + "\n")
+
 
 
 async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
@@ -210,7 +222,7 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                         last_heartbeat = now
                         rem = 100 - snap.primary_used_percent
                         print(
-                            f"[{datetime.now().strftime('%H:%M:%S')}] 数据已同步至设备 (主力: {snap.primary_quota_label} 剩余 {rem}% | 今日 Token: {snap.tokens_today / 1000:.1f}k | 运行任务: {snap.running_tasks})",
+                            f"[{datetime.now().strftime('%H:%M:%S')}] 数据已同步至设备 (主力: {snap.primary_quota_label} 剩余 {rem}% | 今日 Token: {format_token_str(snap.tokens_today)} | 预估: ¥{snap.cost_today_cents / 100:.2f} | 任务: {snap.running_tasks})",
                             flush=True,
                         )
 

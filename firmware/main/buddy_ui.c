@@ -393,7 +393,7 @@ static void format_token_metric(char *dest, size_t size, uint64_t count)
     } else {
         unsigned m = (unsigned)(count / 1000000U);
         unsigned rem = (unsigned)((count % 1000000U) / 100000U);
-        if (m < 100U && rem > 0U) {
+        if (m < 1000U && rem > 0U) {
             snprintf(dest, size, "%u.%uM", m, rem);
         } else {
             snprintf(dest, size, "%uM", m);
@@ -453,19 +453,19 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 
         uint64_t pm_tokens = (s->token_monitor.active_tools_count > 0)
                                  ? s->token_monitor.tools[0].tokens_today
-                                 : (uint64_t)(s->token_monitor.tokens_today * 0.82);
+                                 : s->token_monitor.tokens_today;
         format_token_metric(token_buf, sizeof(token_buf), pm_tokens);
         snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
         text(layer, 144, 126, 78, accent, label_buf, false, LV_TEXT_ALIGN_RIGHT);
     }
 
-    /* 卡片 2: 辅助模型与活跃卡片 */
+    /* 卡片 2: 辅助模型与活跃卡片 (Claude/GPT) */
     {
         unsigned sec_rem = u->available ? (100U - u->secondary_used_percent) : 100U;
         draw_card_frame(8, 176, 224, 98, COL_BLUE);
 
         /* 标题行 */
-        text(layer, 18, 183, 110, COL_INK, "辅助模型 (Claude)", false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 18, 183, 110, COL_INK, "Claude/GPT", false, LV_TEXT_ALIGN_LEFT);
         snprintf(quota_buf, sizeof(quota_buf), "剩余 %u%%", sec_rem);
         text(layer, 120, 182, 102, COL_BLUE, quota_buf, true, LV_TEXT_ALIGN_RIGHT);
 
@@ -475,11 +475,22 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         /* 细分割暗线 */
         rule(layer, 18, 226, 204, lv_color_hex(0x282D35));
 
-        /* 今日总 Token 消耗与套餐状态 */
+        /* 今日总 Token 消耗与辅助模型实际消耗状态 */
         format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
         snprintf(status_buf, sizeof(status_buf), "今日总计 %s", token_buf);
         text(layer, 18, 234, 130, COL_INK, status_buf, false, LV_TEXT_ALIGN_LEFT);
-        text(layer, 158, 234, 64, COL_ORANGE, "PRO 有效", false, LV_TEXT_ALIGN_RIGHT);
+
+        uint64_t sec_tokens = (s->token_monitor.active_tools_count > 1)
+                                  ? s->token_monitor.tools[1].tokens_today
+                                  : 0U;
+        if (sec_tokens > 0U) {
+            char sec_tok_buf[16];
+            format_token_metric(sec_tok_buf, sizeof(sec_tok_buf), sec_tokens);
+            snprintf(label_buf, sizeof(label_buf), "用量 %s", sec_tok_buf);
+            text(layer, 144, 234, 78, COL_BLUE, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+        } else {
+            text(layer, 158, 234, 64, COL_ORANGE, "未消耗", false, LV_TEXT_ALIGN_RIGHT);
+        }
     }
 
     text(layer, 8, 298, 224, COL_DIM, "按 UP 键切换额度与伴侣", false, LV_TEXT_ALIGN_CENTER);
@@ -515,15 +526,15 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         {
             uint64_t pm_tk = (s->token_monitor.active_tools_count > 0)
                                  ? s->token_monitor.tools[0].tokens_today
-                                 : (uint64_t)(s->token_monitor.tokens_today * 0.82);
+                                 : s->token_monitor.tokens_today;
             format_token_metric(token_buf, sizeof(token_buf), pm_tk);
             snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
             text(layer, 144, 134, 78, acc1, label_buf, false, LV_TEXT_ALIGN_RIGHT);
         }
 
-        /* 辅助模型卡片 (Claude) */
+        /* 辅助模型卡片 (Claude/GPT) */
         draw_card_frame(8, 180, 224, 102, COL_BLUE);
-        text(layer, 18, 189, 110, COL_INK, "长周期 (Claude)", false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 18, 189, 110, COL_INK, "Claude/GPT 配额", false, LV_TEXT_ALIGN_LEFT);
         snprintf(value, sizeof(value), "剩余 %u%%", secondary_remaining);
         text(layer, 120, 188, 102, COL_BLUE, value, true, LV_TEXT_ALIGN_RIGHT);
         draw_progress_track(18, 214, 204, 10, secondary_remaining, COL_BLUE);
@@ -531,8 +542,15 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         usage_reset_text(reset, sizeof(reset), u->secondary_resets_at, s);
         text(layer, 18, 246, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
         {
-            format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
-            snprintf(label_buf, sizeof(label_buf), "总计 %s", token_buf);
+            uint64_t sec_tk = (s->token_monitor.active_tools_count > 1)
+                                  ? s->token_monitor.tools[1].tokens_today
+                                  : 0U;
+            if (sec_tk > 0U) {
+                format_token_metric(token_buf, sizeof(token_buf), sec_tk);
+                snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
+            } else {
+                snprintf(label_buf, sizeof(label_buf), "未消耗");
+            }
             text(layer, 144, 246, 78, COL_BLUE, label_buf, false, LV_TEXT_ALIGN_RIGHT);
         }
     }
