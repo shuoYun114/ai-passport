@@ -289,26 +289,26 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
     if (state->page == BUDDY_PAGE_LAUNCHER) {
         if (key == BUDDY_KEY_UP) {
             state->launcher_selection = (buddy_launcher_item_t)(
-                (state->launcher_selection + BUDDY_LAUNCHER_COUNT - 1) % BUDDY_LAUNCHER_COUNT);
+                (state->launcher_selection + BUDDY_LAUNCHER_ITEM_COUNT - 1) % BUDDY_LAUNCHER_ITEM_COUNT);
             buddy_set_ui_refresh(action);
         } else if (key == BUDDY_KEY_DOWN) {
             state->launcher_selection =
-                (buddy_launcher_item_t)((state->launcher_selection + 1) % BUDDY_LAUNCHER_COUNT);
+                (buddy_launcher_item_t)((state->launcher_selection + 1) % BUDDY_LAUNCHER_ITEM_COUNT);
             buddy_set_ui_refresh(action);
         } else if (key == BUDDY_KEY_OK) {
             switch (state->launcher_selection) {
-            case BUDDY_LAUNCHER_AI_MONITOR:
+            case BUDDY_LAUNCHER_ITEM_AI_MONITOR:
                 state->page = BUDDY_PAGE_HOME;
                 break;
-            case BUDDY_LAUNCHER_GAME_SNAKE:
+            case BUDDY_LAUNCHER_ITEM_GAME_SNAKE:
                 buddy_snake_reset();
                 state->page = BUDDY_PAGE_GAME_SNAKE;
                 break;
-            case BUDDY_LAUNCHER_GAME_DINO:
+            case BUDDY_LAUNCHER_ITEM_GAME_DINO:
                 buddy_dino_reset();
                 state->page = BUDDY_PAGE_GAME_DINO;
                 break;
-            case BUDDY_LAUNCHER_SETTINGS:
+            case BUDDY_LAUNCHER_ITEM_SETTINGS:
                 state->page = BUDDY_PAGE_SETTINGS;
                 state->settings_selection = BUDDY_SETTINGS_BRIGHTNESS;
                 break;
@@ -526,7 +526,7 @@ void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *set
     memset(state, 0, sizeof(*state));
     state->connection = BUDDY_CONNECTION_OFFLINE;
     state->page = BUDDY_PAGE_LAUNCHER;
-    state->launcher_selection = BUDDY_LAUNCHER_AI_MONITOR;
+    state->launcher_selection = BUDDY_LAUNCHER_ITEM_AI_MONITOR;
     state->heartbeat_stale = true;
     state->brightness_level = 4;
     state->transcript_enabled = true;
