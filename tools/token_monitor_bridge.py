@@ -77,8 +77,9 @@ def trigger_profile_sync(name: str, owner: str) -> bool:
     global _active_ble_client, _active_event_loop
     if _active_ble_client and _active_ble_client.is_connected and _active_event_loop:
         try:
-            p_name = json.dumps({"name": name}, ensure_ascii=False).encode("utf-8") + b"\n"
-            p_owner = json.dumps({"owner": owner}, ensure_ascii=False).encode("utf-8") + b"\n"
+            # 严格匹配固件协议：固件要求 {"cmd": "name", "name": "..."} 与 {"cmd": "owner", "name": "..."}
+            p_name = json.dumps({"cmd": "name", "name": name, "value": name}, ensure_ascii=False).encode("utf-8") + b"\n"
+            p_owner = json.dumps({"cmd": "owner", "name": owner, "owner": owner, "value": owner}, ensure_ascii=False).encode("utf-8") + b"\n"
             asyncio.run_coroutine_threadsafe(send_payload(_active_ble_client, p_name), _active_event_loop)
             asyncio.run_coroutine_threadsafe(send_payload(_active_ble_client, p_owner), _active_event_loop)
             print(f"[Web配置] 档案已通过 BLE 实时下发副屏: Name={name}, Owner={owner}", flush=True)
@@ -617,8 +618,10 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                     json.dumps({"time": [int(time.time()), tz_offset]}).encode() + b"\n",
                 )
                 profile = get_profile_config()
-                await send_payload(client, json.dumps({"name": profile["name"]}).encode() + b"\n")
-                await send_payload(client, json.dumps({"owner": profile["owner"]}).encode() + b"\n")
+                p_name = json.dumps({"cmd": "name", "name": profile["name"], "value": profile["name"]}, ensure_ascii=False).encode("utf-8") + b"\n"
+                p_owner = json.dumps({"cmd": "owner", "name": profile["owner"], "owner": profile["owner"], "value": profile["owner"]}, ensure_ascii=False).encode("utf-8") + b"\n"
+                await send_payload(client, p_name)
+                await send_payload(client, p_owner)
 
                 last_heartbeat = 0.0
                 last_refresh = 0.0

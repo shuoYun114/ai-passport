@@ -395,8 +395,14 @@ static bool buddy_parse_command(const cJSON *object, const char *field, buddy_ev
         value_size = BUDDY_OWNER_MAX;
     }
 
-    if (!buddy_json_optional_string(object, field, &value, &length)) {
-        return false;
+    if (field != NULL) {
+        (void)buddy_json_optional_string(object, field, &value, &length);
+    }
+    if (value == NULL && type == BUDDY_EVENT_OWNER) {
+        (void)buddy_json_optional_string(object, "owner", &value, &length);
+    }
+    if (value == NULL) {
+        (void)buddy_json_optional_string(object, "value", &value, &length);
     }
     if (value == NULL ||
         !buddy_copy_utf8(event->command.value, value_size, value, length,
@@ -550,6 +556,10 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     if (command == NULL) {
         if (cJSON_GetObjectItemCaseSensitive(root, "time") != NULL) {
             result = buddy_parse_time(root, event) ? (int)event->type : result;
+        } else if (cJSON_GetObjectItemCaseSensitive(root, "name") != NULL) {
+            result = buddy_parse_command(root, "name", BUDDY_EVENT_NAME, event) ? (int)event->type : result;
+        } else if (cJSON_GetObjectItemCaseSensitive(root, "owner") != NULL) {
+            result = buddy_parse_command(root, "owner", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
         } else if (buddy_parse_heartbeat(root, event)) {
             result = (int)event->type;
         }
@@ -570,7 +580,7 @@ int buddy_protocol_parse(const char *json, size_t length, buddy_event_t *event)
     if (strcmp(command, "name") == 0) {
         result = buddy_parse_command(root, "name", BUDDY_EVENT_NAME, event) ? (int)event->type : result;
     } else if (strcmp(command, "owner") == 0) {
-        result = buddy_parse_command(root, "name", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
+        result = buddy_parse_command(root, "owner", BUDDY_EVENT_OWNER, event) ? (int)event->type : result;
     } else if (strcmp(command, "status") == 0) {
         if (cJSON_GetObjectItemCaseSensitive(root, "status") == NULL &&
             cJSON_GetObjectItemCaseSensitive(root, "value") == NULL) {
