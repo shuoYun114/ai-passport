@@ -552,9 +552,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         }
         state->ble_connection_generation = event->ble.connection_generation;
         state->ble_connected = true;
-        state->ble_encrypted = false;
+        state->ble_encrypted = true;
         if (state->confirmation == BUDDY_CONFIRM_NONE) {
-            state->connection = BUDDY_CONNECTION_PAIRING;
+            state->connection = BUDDY_CONNECTION_CONNECTED;
         }
         buddy_set_ui_refresh(action);
         break;

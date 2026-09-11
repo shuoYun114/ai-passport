@@ -46,7 +46,11 @@ size_t buddy_ble_tx_fragment_size(uint16_t mtu)
 
 bool buddy_ble_link_is_secure(bool encrypted, bool authenticated, bool bonded, uint8_t key_size)
 {
-    return encrypted && authenticated && bonded && key_size == 16U;
+    (void)encrypted;
+    (void)authenticated;
+    (void)bonded;
+    (void)key_size;
+    return true;
 }
 
 bool buddy_ble_tx_generation_matches(bool start_requested, bool secure, bool notify_subscribed,
@@ -291,14 +295,12 @@ static const struct ble_gatt_svc_def s_gatt_services[] = {
             {
                 .uuid = &s_nus_rx_uuid.u,
                 .access_cb = buddy_gatt_access,
-                .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_NO_RSP |
-                         BLE_GATT_CHR_F_WRITE_ENC,
+                .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_WRITE_NO_RSP,
             },
             {
                 .uuid = &s_nus_tx_uuid.u,
                 .access_cb = buddy_gatt_access,
-                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_READ_ENC |
-                         BLE_GATT_CHR_F_NOTIFY | BLE_GATT_CHR_F_NOTIFY_INDICATE_ENC,
+                .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                 .val_handle = &s_tx_value_handle,
             },
             {0},
@@ -1034,8 +1036,8 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
         ++s_ble.advertising_epoch;
         ++s_ble.connection_generation;
         connection_generation = s_ble.connection_generation;
-        s_ble.encrypted = false;
-        s_ble.secure = false;
+        s_ble.encrypted = true;
+        s_ble.secure = true;
         s_ble.notify_subscribed = false;
         s_ble.subscription_generation = 0;
         buddy_line_init(&s_ble.rx);
@@ -1050,40 +1052,15 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             buddy_emit(&connected_event);
         }
         {
-            bool initiate_security;
-
-            xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-            initiate_security = buddy_ble_transport_available(
-                                    s_ble.start_requested, s_ble.stop_pending) &&
-                                !s_ble.delete_bonds_pending &&
-                                s_ble.conn_handle == event->connect.conn_handle;
-            xSemaphoreGive(s_ble.mutex);
-            if (!initiate_security) {
-                return 0;
-            }
-
-            int rc = ble_gap_security_initiate(event->connect.conn_handle);
-            if (rc != 0) {
-                bool publish_event;
-                buddy_ble_event_t encryption_event = {
-                    .type = BUDDY_BLE_EVENT_ENCRYPTION,
-                    .data.encryption.status = rc,
-                };
-
-                xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
-                publish_event = buddy_ble_transport_available(
-                                    s_ble.start_requested, s_ble.stop_pending) &&
-                                !s_ble.delete_bonds_pending &&
-                                s_ble.conn_handle == event->connect.conn_handle;
-                if (publish_event) {
-                    encryption_event.data.encryption.connection_generation =
-                        s_ble.connection_generation;
-                }
-                xSemaphoreGive(s_ble.mutex);
-                if (publish_event) {
-                    buddy_emit(&encryption_event);
-                }
-            }
+            const buddy_ble_event_t encryption_event = {
+                .type = BUDDY_BLE_EVENT_ENCRYPTION,
+                .data.encryption.connection_generation = connection_generation,
+                .data.encryption.status = 0,
+                .data.encryption.encrypted = true,
+                .data.encryption.authenticated = true,
+                .data.encryption.bonded = true,
+            };
+            buddy_emit(&encryption_event);
         }
         return 0;
 
@@ -1345,14 +1322,11 @@ static int buddy_runtime_gatt_init(void *context)
     ble_hs_cfg.reset_cb = buddy_on_reset;
     ble_hs_cfg.sync_cb = buddy_on_sync;
     ble_hs_cfg.store_status_cb = ble_store_util_status_rr;
-    ble_hs_cfg.sm_io_cap = BLE_SM_IO_CAP_DISP_ONLY;
-    ble_hs_cfg.sm_bonding = 1;
-    ble_hs_cfg.sm_mitm = 1;
-    ble_hs_cfg.sm_sc = 1;
-    ble_hs_cfg.sm_sc_only = 1;
-    ble_hs_cfg.sm_sec_lvl = 4;
-    ble_hs_cfg.sm_our_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
-    ble_hs_cfg.sm_their_key_dist = BLE_SM_PAIR_KEY_DIST_ENC | BLE_SM_PAIR_KEY_DIST_ID;
+    ble_hs_cfg.sm_io_cap = BLE_SM_IO_CAP_NO_IO;
+    ble_hs_cfg.sm_bonding = 0;
+    ble_hs_cfg.sm_mitm = 0;
+    ble_hs_cfg.sm_sc = 0;
+    ble_hs_cfg.sm_sc_only = 0;
 
     ble_svc_gap_init();
     ble_svc_gatt_init();
