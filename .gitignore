@@ -42,3 +42,8 @@ env/
 htmlcov/
 *.tmp
 *.log
+
+# 固件编译构建产物
+firmware/build/
+*.bin
+.ccache/

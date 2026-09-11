@@ -116,3 +116,23 @@ python -m unittest discover -s tests
 # 执行固件大小上限审计
 python tools/check_firmware_size.py
 ```
+
+---
+
+## 固件编译生成与烧录（.bin 固件）
+
+### 途径 1：GitHub Actions 云端自动编译（推荐，零本地安装）
+项目内置 `.github/workflows/build-firmware.yml`。只需将本项目推送（push）到 GitHub 仓库，GitHub 云端会免费调用乐鑫官方 `espressif/esp-idf-ci-action:v5.5.3` 自动编译，几分钟内在 Actions / Releases 页面即可直接下载 `FoloToy-AI-Passport-full.bin`！
+
+### 途径 2：本地编译
+```bash
+# 自动编译分区表二进制并尝试调用本地 ESP-IDF 或 Docker
+python tools/build_firmware.py
+```
+
+### 途径 3：物理设备一键烧录
+设备通过 USB 连接电脑后执行：
+```bash
+python tools/flash_firmware.py
+```
+
