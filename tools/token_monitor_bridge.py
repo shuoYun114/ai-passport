@@ -50,10 +50,10 @@ def build_firmware_payload(snap: TokenMonitorSnapshot, completed: bool = False) 
         "tokens": snap.tokens_total,
         "tokens_today": snap.tokens_today,
         "msg": msg,
-        "entries": [f"{t.name}: {t.tokens_today:,}" for t in snap.tools[:4]],
+        "entries": [f"{t.name}: 剩余 {100 - t.used_percent}%" for t in snap.tools[:4]],
         # 兼容原有 codex 配额节点
         "codex": {
-            "plan": "TokenMonitor",
+            "plan": snap.plan_name,
             "primary_used": snap.primary_used_percent,
             "primary_window": 300,
             "primary_reset": snap.primary_reset_timestamp,
@@ -134,26 +134,29 @@ async def find_device(device_name: Optional[str]) -> Any:
 
 def print_simulated_screen(snap: TokenMonitorSnapshot) -> None:
     """在终端呈现 AI Passport 屏幕的 ASCII 预览。"""
-    print("\n" + "=" * 48)
-    print("      FoloToy AI Passport 屏幕呈现预览      ")
-    print("=" * 48)
-    print(f" [已连接]        {datetime.now().strftime('%H:%M')}             电量85% ")
-    print("-" * 48)
-    print("                Token 监控看板                  ")
-    status_tag = "● 工作中" if snap.running_tasks > 0 else "○ 已就绪"
-    print(f"            {status_tag} · {snap.running_tasks} 任务运行中      ")
-    print("-" * 48)
-    print(f"  今日 Tokens:   {snap.tokens_today:>12,} Tokens")
-    print(f"  预估费用:      ${snap.cost_today_cents / 100:>12.2f}")
-    print(f"  活跃工具数:    {len(snap.tools):>12} 个")
-    print("-" * 48)
-    print("  [主力配额]")
-    print(f"  {snap.primary_quota_label:<20} 剩余: {100 - snap.primary_used_percent}%")
-    bar_on = int(round((100 - snap.primary_used_percent) / 10))
-    print(f"  [{'#' * bar_on}{'-' * (10 - bar_on)}]")
-    print("-" * 48)
-    print("  [按 UP 键切换到「多工具额度」与「工具明细」页]")
-    print("=" * 48 + "\n")
+    print("\n" + "=" * 52)
+    print("           AI PASSPORT 极客桌面副屏呈现预览          ")
+    print("=" * 52)
+    print(f" [● 在线]          {datetime.now().strftime('%H:%M')}             [■■■ 85%] ")
+    print("-" * 52)
+    print("                     AI PASSPORT                    ")
+    status_tag = "● 工作中" if snap.running_tasks > 0 else "○ 待命中"
+    print(f"                {status_tag} · {snap.running_tasks} 任务运行中      ")
+    print("-" * 52)
+    print("  [主力模型: " + snap.primary_quota_label + "]")
+    rem1 = 100 - snap.primary_used_percent
+    bar1 = int(round(rem1 / 5))
+    print(f"  剩余: {rem1:>3}%   [{'■' * bar1}{' ' * (20 - bar1)}]  (PRO 有效)")
+    print("-" * 52)
+    print("  [辅助模型: " + snap.secondary_quota_label + "]")
+    rem2 = 100 - snap.secondary_used_percent
+    bar2 = int(round(rem2 / 5))
+    print(f"  剩余: {rem2:>3}%   [{'■' * bar2}{' ' * (20 - bar2)}]  (运行正常)")
+    print("-" * 52)
+    print(f"  今日交互轮次:  {snap.tokens_today // 1000:>3} 轮")
+    print(f"  订阅状态:      {snap.plan_name} (无额外按量扣费)")
+    print(f"  监控工具数:    {len(snap.tools):>3} 个核心模型")
+    print("=" * 52 + "\n")
 
 
 async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:

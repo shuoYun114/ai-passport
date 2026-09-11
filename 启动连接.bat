@@ -1,11 +1,25 @@
 @echo off
+chcp 65001 >nul
 cd /d "%~dp0"
-title AI Passport Token Monitor
+title AI Passport 终端调试连接器
+
+echo ========================================================
+echo           AI Passport 极客桌面副屏 - 终端调试模式
+echo ========================================================
+echo.
+echo [*] 提示：若希望在后台静默运行（无任何 CMD 命令行黑框），
+echo     请直接双击运行「启动后台监控(免CMD黑框).vbs」！
+echo.
+echo [*] 当前正在前台终端启动连接与配对...
+echo ========================================================
+echo.
+
 python "tools\token_monitor_bridge.py"
+
 if %ERRORLEVEL% NEQ 0 (
     echo.
     echo ========================================================
-    echo Process exited with error code %ERRORLEVEL%
+    echo 连接进程异常退出 (错误码: %ERRORLEVEL%)
     echo ========================================================
     pause
 )
