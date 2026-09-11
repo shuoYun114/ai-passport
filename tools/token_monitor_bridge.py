@@ -169,13 +169,20 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
 
     from bleak import BleakClient
 
+    connected_once = False
     while True:
         try:
             device = await find_device(device_name)
-            print(f"正在连接到 {device.name or device.address}...", flush=True)
-            async with BleakClient(device, pair=True, timeout=60.0) as client:
+            if not connected_once:
+                print(f"正在发起连接与配对: {device.name or device.address} ...", flush=True)
+                print(">>> 提示：若设备屏幕出现 6 位 PIN 码，请在 Windows 弹窗中输入。配对等待已延长至 120 秒。", flush=True)
+            else:
+                print(f"正在重新连接: {device.name or device.address} ...", flush=True)
+
+            async with BleakClient(device, pair=True, timeout=120.0) as client:
                 await client.start_notify(NUS_TX_UUID, lambda _s, _d: None)
-                print("设备已连接，Token Monitor 实时数据流已上线！", flush=True)
+                print("[OK] 设备已成功连接并绑定！Token Monitor 数据流已上线！\n", flush=True)
+                connected_once = True
 
                 # 同步时钟
                 tz_offset = int(time.mktime(time.localtime()) - time.mktime(time.gmtime()))
@@ -199,9 +206,32 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                         last_heartbeat = now
 
                     await asyncio.sleep(1.0)
+
         except Exception as err:
-            print(f"连接中断: {err}。3 秒后尝试重连...", file=sys.stderr, flush=True)
-            await asyncio.sleep(3.0)
+            if not connected_once:
+                print("\n" + "=" * 65, file=sys.stderr)
+                print(f"[!] 首次连接/配对中断: {err}", file=sys.stderr)
+                print("=" * 65, file=sys.stderr)
+                print("可能原因：", file=sys.stderr)
+                print("  设备屏幕显示了 6 位配对码，但 Windows 弹窗未及时输入或已超时。\n", file=sys.stderr)
+                print("【最稳妥、最从容的解决方案（强烈推荐）】：", file=sys.stderr)
+                print("  1. 打开 Windows【设置】->【蓝牙和其他设备】-> 点击【添加设备】->【蓝牙】；", file=sys.stderr)
+                print("  2. 在搜索列表中点击您的设备（如 Codex-xxxx 或 AI-Passport）；", file=sys.stderr)
+                print("  3. 此时 Windows 会常驻显示 6 位 PIN 码输入框，输入后点击连接完成系统级绑定；", file=sys.stderr)
+                print("  4. 绑定成功后，再次运行本程序即可秒级直连，永远不再弹码！", file=sys.stderr)
+                print("=" * 65, file=sys.stderr)
+
+                if sys.stdin and sys.stdin.isatty():
+                    try:
+                        await asyncio.to_thread(input, "\n输入 PIN 码或准备就绪后，按 [Enter/回车键] 重新发起连接 (或按 Ctrl+C 退出)...")
+                    except Exception:
+                        await asyncio.sleep(15.0)
+                else:
+                    print("等待 30 秒后自动重试...", file=sys.stderr, flush=True)
+                    await asyncio.sleep(30.0)
+            else:
+                print(f"数据通信偶发中断: {err}。等待 10 秒后自动重连...", file=sys.stderr, flush=True)
+                await asyncio.sleep(10.0)
 
 
 def main() -> int:
