@@ -153,7 +153,8 @@ def print_simulated_screen(snap: TokenMonitorSnapshot) -> None:
     bar2 = int(round(rem2 / 5))
     print(f"  剩余: {rem2:>3}%   [{'■' * bar2}{' ' * (20 - bar2)}]  (运行正常)")
     print("-" * 52)
-    print(f"  今日交互轮次:  {snap.tokens_today // 1000:>3} 轮")
+    print(f"  今日 Token 消耗: {snap.tokens_today:>10,} ({snap.tokens_today / 1000:.1f}k)")
+    print(f"  今日活跃会话:  {snap.total_tasks:>3} 个会话")
     print(f"  订阅状态:      {snap.plan_name} (无额外按量扣费)")
     print(f"  监控工具数:    {len(snap.tools):>3} 个核心模型")
     print("=" * 52 + "\n")
@@ -209,7 +210,7 @@ async def run_bridge(device_name: Optional[str], dry_run: bool) -> None:
                         last_heartbeat = now
                         rem = 100 - snap.primary_used_percent
                         print(
-                            f"[{datetime.now().strftime('%H:%M:%S')}] 数据已同步至设备 (主力: {snap.primary_quota_label} 剩余 {rem}% | 运行任务: {snap.running_tasks})",
+                            f"[{datetime.now().strftime('%H:%M:%S')}] 数据已同步至设备 (主力: {snap.primary_quota_label} 剩余 {rem}% | 今日 Token: {snap.tokens_today / 1000:.1f}k | 运行任务: {snap.running_tasks})",
                             flush=True,
                         )
 

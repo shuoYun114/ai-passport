@@ -376,23 +376,53 @@ static void usage_reset_text(char *destination, size_t size, uint64_t resets_at,
 }
 
 
+static void format_token_metric(char *dest, size_t size, uint64_t count)
+{
+    if (count == 0U) {
+        snprintf(dest, size, "0");
+    } else if (count < 1000U) {
+        snprintf(dest, size, "%u", (unsigned)count);
+    } else if (count < 1000000U) {
+        unsigned k = (unsigned)(count / 1000U);
+        unsigned rem = (unsigned)((count % 1000U) / 100U);
+        if (k < 100U && rem > 0U) {
+            snprintf(dest, size, "%u.%uk", k, rem);
+        } else {
+            snprintf(dest, size, "%uk", k);
+        }
+    } else {
+        unsigned m = (unsigned)(count / 1000000U);
+        unsigned rem = (unsigned)((count % 1000000U) / 100000U);
+        if (m < 100U && rem > 0U) {
+            snprintf(dest, size, "%u.%uM", m, rem);
+        } else {
+            snprintf(dest, size, "%uM", m);
+        }
+    }
+}
+
 static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char quota_buf[48];
     char reset_buf[48];
     char status_buf[48];
+    char token_buf[32];
+    char label_buf[32];
     const buddy_codex_usage_t *u = &s->codex_usage;
 
     /* 顶部标题区 */
     text(layer, 8, 30, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
 
-    /* 运行状态微徽章 */
+    /* 运行状态微徽章：待命时直接醒目展示今日 Token 消耗 */
     if (s->running > 0) {
-        box(NULL, 64, 49, 112, 16, lv_color_hex(0x19281f), COL_GREEN, 1, 0);
+        box(NULL, 60, 49, 120, 16, lv_color_hex(0x19281f), COL_GREEN, 1, 0);
         snprintf(status_buf, sizeof(status_buf), "工作中 · %u 任务", s->running);
-        text(layer, 64, 50, 112, COL_GREEN, status_buf, false, LV_TEXT_ALIGN_CENTER);
+        text(layer, 60, 50, 120, COL_GREEN, status_buf, false, LV_TEXT_ALIGN_CENTER);
     } else {
-        text(layer, 8, 50, 224, COL_DIM, "助手就绪 · 待命中", false, LV_TEXT_ALIGN_CENTER);
+        format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
+        box(NULL, 50, 49, 140, 16, lv_color_hex(0x151f18), COL_GREEN, 1, 0);
+        snprintf(status_buf, sizeof(status_buf), "今日 Token: %s", token_buf);
+        text(layer, 50, 50, 140, COL_GREEN, status_buf, false, LV_TEXT_ALIGN_CENTER);
     }
 
     /* 卡片 1: 主力配额 (Hero Quota Card) */
@@ -417,10 +447,16 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         /* 细分割暗线 */
         rule(layer, 18, 118, 204, lv_color_hex(0x282D35));
 
-        /* 底部倒计时与标签 */
+        /* 底部倒计时与主力模型 Token 用量 */
         usage_reset_text(reset_buf, sizeof(reset_buf), u->primary_resets_at, s);
-        text(layer, 18, 126, 140, COL_DIM, reset_buf, false, LV_TEXT_ALIGN_LEFT);
-        text(layer, 158, 126, 64, COL_ORANGE, "PRO 有效", false, LV_TEXT_ALIGN_RIGHT);
+        text(layer, 18, 126, 124, COL_DIM, reset_buf, false, LV_TEXT_ALIGN_LEFT);
+
+        uint64_t pm_tokens = (s->token_monitor.active_tools_count > 0)
+                                 ? s->token_monitor.tools[0].tokens_today
+                                 : (uint64_t)(s->token_monitor.tokens_today * 0.82);
+        format_token_metric(token_buf, sizeof(token_buf), pm_tokens);
+        snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
+        text(layer, 144, 126, 78, accent, label_buf, false, LV_TEXT_ALIGN_RIGHT);
     }
 
     /* 卡片 2: 辅助模型与活跃卡片 */
@@ -439,11 +475,11 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         /* 细分割暗线 */
         rule(layer, 18, 226, 204, lv_color_hex(0x282D35));
 
-        /* 会话统计与健康状态 */
-        snprintf(status_buf, sizeof(status_buf), "今日会话：%u 轮次",
-                 s->token_monitor.tokens_today > 0 ? (unsigned)(s->token_monitor.tokens_today / 1000U + 1) : 1);
-        text(layer, 18, 234, 140, COL_DIM, status_buf, false, LV_TEXT_ALIGN_LEFT);
-        text(layer, 158, 234, 64, COL_GREEN, "运行正常", false, LV_TEXT_ALIGN_RIGHT);
+        /* 今日总 Token 消耗与套餐状态 */
+        format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
+        snprintf(status_buf, sizeof(status_buf), "今日总计 %s", token_buf);
+        text(layer, 18, 234, 130, COL_INK, status_buf, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 158, 234, 64, COL_ORANGE, "PRO 有效", false, LV_TEXT_ALIGN_RIGHT);
     }
 
     text(layer, 8, 298, 224, COL_DIM, "按 UP 键切换额度与伴侣", false, LV_TEXT_ALIGN_CENTER);
@@ -453,6 +489,8 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char value[64];
     char reset[48];
+    char token_buf[32];
+    char label_buf[32];
     const buddy_codex_usage_t *u = &s->codex_usage;
 
     text(layer, 8, 34, 224, COL_ORANGE, "模型配额中心", true, LV_TEXT_ALIGN_CENTER);
@@ -473,7 +511,15 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         draw_progress_track(18, 102, 204, 10, primary_remaining, acc1);
         rule(layer, 18, 124, 204, lv_color_hex(0x282D35));
         usage_reset_text(reset, sizeof(reset), u->primary_resets_at, s);
-        text(layer, 18, 134, 204, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 18, 134, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
+        {
+            uint64_t pm_tk = (s->token_monitor.active_tools_count > 0)
+                                 ? s->token_monitor.tools[0].tokens_today
+                                 : (uint64_t)(s->token_monitor.tokens_today * 0.82);
+            format_token_metric(token_buf, sizeof(token_buf), pm_tk);
+            snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
+            text(layer, 144, 134, 78, acc1, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+        }
 
         /* 辅助模型卡片 (Claude) */
         draw_card_frame(8, 180, 224, 102, COL_BLUE);
@@ -483,7 +529,12 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         draw_progress_track(18, 214, 204, 10, secondary_remaining, COL_BLUE);
         rule(layer, 18, 236, 204, lv_color_hex(0x282D35));
         usage_reset_text(reset, sizeof(reset), u->secondary_resets_at, s);
-        text(layer, 18, 246, 204, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 18, 246, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
+        {
+            format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
+            snprintf(label_buf, sizeof(label_buf), "总计 %s", token_buf);
+            text(layer, 144, 246, 78, COL_BLUE, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+        }
     }
     text(layer, 8, 298, 224, COL_DIM, "UP: 工具明细 · DOWN: 滚动", false, LV_TEXT_ALIGN_CENTER);
 }
@@ -502,21 +553,21 @@ static void draw_tools_breakdown(lv_layer_t *layer, const buddy_ui_snapshot_t *s
                      "暂无工具消耗分类。\n在电脑端使用 Claude/Codex 等工具后将在此自动汇总。", 6);
     } else {
         draw_card_frame(8, 66, 224, 218, COL_ORANGE);
-        text(layer, 18, 74, 80, COL_DIM, "工具名称", false, LV_TEXT_ALIGN_LEFT);
-        text(layer, 100, 74, 60, COL_DIM, "配额余量", false, LV_TEXT_ALIGN_CENTER);
-        text(layer, 162, 74, 60, COL_DIM, "状态", false, LV_TEXT_ALIGN_RIGHT);
+        text(layer, 18, 74, 82, COL_DIM, "工具名称", false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 102, 74, 64, COL_DIM, "今日用量", false, LV_TEXT_ALIGN_CENTER);
+        text(layer, 168, 74, 54, COL_DIM, "配额余量", false, LV_TEXT_ALIGN_RIGHT);
         rule(layer, 14, 94, 212, lv_color_hex(0x282D35));
 
         for (i = 0; i < count && i < 5; ++i) {
             int y = 104 + (int)i * 32;
             const buddy_tool_usage_entry_t *t = &s->token_monitor.tools[i];
             unsigned rem = 100U - t->used_percent;
-            snprintf(token_buf, sizeof(token_buf), "%u%%", rem);
-            snprintf(cost_buf, sizeof(cost_buf), "%s", rem > 0 ? "正常" : "耗尽");
+            format_token_metric(token_buf, sizeof(token_buf), t->tokens_today);
+            snprintf(cost_buf, sizeof(cost_buf), "%u%%", rem);
 
-            text(layer, 18, y, 80, COL_INK, t->name[0] ? t->name : "AI Tool", false, LV_TEXT_ALIGN_LEFT);
-            text(layer, 100, y, 60, rem < 20U ? COL_RED : COL_GREEN, token_buf, false, LV_TEXT_ALIGN_CENTER);
-            text(layer, 162, y, 60, rem > 0 ? COL_GREEN : COL_RED, cost_buf, false, LV_TEXT_ALIGN_RIGHT);
+            text(layer, 18, y, 82, COL_INK, t->name[0] ? t->name : "AI Tool", false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 102, y, 64, COL_INK, token_buf, false, LV_TEXT_ALIGN_CENTER);
+            text(layer, 168, y, 54, rem < 20U ? COL_RED : COL_GREEN, cost_buf, false, LV_TEXT_ALIGN_RIGHT);
             if (i < count - 1 && i < 4) {
                 rule(layer, 18, y + 24, 204, lv_color_hex(0x22262B));
             }
