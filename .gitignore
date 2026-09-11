@@ -1,0 +1,44 @@
+# 忽略参考项目（已克隆在 references/ 下）
+references/
+
+# Python 缓存与编译产物
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# 虚拟环境
+.venv/
+venv/
+ENV/
+env/
+
+# IDE 与编辑器配置
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 临时与测试产物
+.pytest_cache/
+.coverage
+htmlcov/
+*.tmp
+*.log
