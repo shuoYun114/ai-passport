@@ -48,11 +48,11 @@ def detect_target_port() -> tuple[str | None, str]:
         if p.device.upper() != "COM1":
             return p.device, p.description
 
-    # 若仅有 COM1，返回并提示
-    return ports[0].device, ports[0].description
+    # 若仅有主板 COM1 或无有效 USB 设备，返回 None
+    return None, "未检测到 USB 串口设备"
 
 
-def flash_firmware(port: str | None = None, bin_path: Path | None = None, baud: int = 460800) -> bool:
+def flash_firmware(port: str | None = None, bin_path: Path | None = None, baud: int = 460800, wait: bool = True) -> bool:
     bin_file = bin_path or DEFAULT_BIN
     if not bin_file.is_file():
         print(f"[ERR] 未找到待烧录固件: {bin_file}")
@@ -62,10 +62,21 @@ def flash_firmware(port: str | None = None, bin_path: Path | None = None, baud: 
     port_desc = ""
     if not port:
         port, port_desc = detect_target_port()
-        if not port:
+        if not port and wait:
+            print("[*] 正在等待 AI Passport 连接电脑 (请使用 USB-C 数据线插入)...")
+            import time
+            while not port:
+                time.sleep(1.0)
+                port, port_desc = detect_target_port()
+                if port:
+                    print(f"[OK] 检测到设备已插入: {port} [{port_desc}]")
+                    time.sleep(1.0)  # 等待端口驱动稳定
+                    break
+        elif not port:
             print("[ERR] 未检测到任何串口设备，请使用 USB 数据线将 AI Passport 连接至电脑。")
             return False
-        print(f"[*] 智能识别到目标串口: {port} [{port_desc}]")
+        else:
+            print(f"[*] 智能识别到目标串口: {port} [{port_desc}]")
 
     print(f"[*] 准备向 {port} 烧录全新极客固件: {bin_file.name} ({bin_file.stat().st_size} 字节, {bin_file.stat().st_size / 1024:.1f} KB)")
     cmd = [
@@ -105,7 +116,8 @@ if __name__ == "__main__":
     parser.add_argument("--port", "-p", default=None, help="目标串口 (如 COM3)")
     parser.add_argument("--bin", "-b", default=None, type=Path, help="待烧录 bin 固件路径")
     parser.add_argument("--baud", default=460800, type=int, help="波特率 (默认 460800)")
+    parser.add_argument("--no-wait", action="store_true", help="未检测到设备时不等待直接退出")
     args = parser.parse_args()
 
-    success = flash_firmware(args.port, args.bin, args.baud)
+    success = flash_firmware(args.port, args.bin, args.baud, wait=not args.no_wait)
     sys.exit(0 if success else 1)
