@@ -954,12 +954,13 @@ static QueueHandle_t buddy_next_ready_queue(void)
     return NULL;
 }
 
-static QueueHandle_t buddy_wait_for_queue(void)
+static QueueHandle_t buddy_wait_for_queue(bool low_power)
 {
     QueueHandle_t ready = buddy_next_ready_queue();
 
     if (ready == NULL) {
-        (void)ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(BUDDY_APP_TICK_MS));
+        uint32_t wait_ms = low_power ? 1000U : BUDDY_APP_TICK_MS;
+        (void)ulTaskNotifyTake(pdTRUE, pdMS_TO_TICKS(wait_ms));
         ready = buddy_next_ready_queue();
     }
     return ready;
@@ -979,7 +980,7 @@ static void buddy_app_task(void *context)
     buddy_sample_battery(&state);
 
     for (;;) {
-        QueueHandle_t ready = buddy_wait_for_queue();
+        QueueHandle_t ready = buddy_wait_for_queue(state.screen_off);
         uint64_t now_ms = buddy_now_ms();
         bool reduced = false;
 
@@ -1024,7 +1025,9 @@ static void buddy_app_task(void *context)
         }
         state.ble_connected = atomic_load(&s_ble_initialized) && buddy_ble_is_connected();
         state.ble_encrypted = atomic_load(&s_ble_initialized) && buddy_ble_is_encrypted();
-        buddy_render(&state, &action, now_ms);
+        if (!state.screen_off) {
+            buddy_render(&state, &action, now_ms);
+        }
     }
 }
 
@@ -1096,7 +1099,7 @@ void app_main(void)
                  BSP_LCD_MOSI, BSP_LCD_SCLK, BSP_LCD_CS, BSP_LCD_DC, BSP_LCD_BL);
         return;
     }
-    bsp_display_backlight(100);
+    bsp_display_backlight(60);
     s_initial_battery_available = bsp_battery_init() == ESP_OK;
 
     if (buddy_settings_init() != ESP_OK || buddy_settings_load(&s_initial_settings) != ESP_OK) {

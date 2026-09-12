@@ -125,8 +125,27 @@ static void buddy_clear_stale_prompt(buddy_state_t *state, uint64_t now_ms)
 
 static void buddy_set_ui_refresh(buddy_action_t *action)
 {
-    if (action != NULL) {
+    if (action != NULL && action->type == BUDDY_ACTION_NONE) {
         action->type = BUDDY_ACTION_UI_REFRESH;
+    }
+}
+
+static void buddy_wake_if_needed(buddy_state_t *state, uint64_t now_ms, buddy_action_t *action)
+{
+    state->last_user_activity_ms = now_ms;
+    if (state->screen_off) {
+        state->screen_off = false;
+        state->dimmed = false;
+        if (action != NULL && action->type == BUDDY_ACTION_NONE) {
+            action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
+            action->brightness_percent = (uint8_t)(20U + state->brightness_level * 20U);
+        }
+    } else if (state->dimmed) {
+        state->dimmed = false;
+        if (action != NULL && action->type == BUDDY_ACTION_NONE) {
+            action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
+            action->brightness_percent = (uint8_t)(20U + state->brightness_level * 20U);
+        }
     }
 }
 
@@ -552,7 +571,9 @@ void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *set
     state->page = BUDDY_PAGE_LAUNCHER;
     state->launcher_selection = BUDDY_LAUNCHER_ITEM_AI_MONITOR;
     state->heartbeat_stale = true;
-    state->brightness_level = 4;
+    state->brightness_level = 2; /* 默认 60% 舒适亮度，比 100% 节省约 40% 功耗 */
+    state->last_user_activity_ms = 0;
+    state->dimmed = false;
     state->transcript_enabled = true;
     if (settings != NULL) {
         state->settings = *settings;
@@ -581,6 +602,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
                               now_ms, action);
         break;
     case BUDDY_EVENT_PROMPT:
+        buddy_wake_if_needed(state, now_ms, action);
         buddy_apply_prompt(state, &event->prompt, event->ble.connection_generation,
                            now_ms, action);
         break;
@@ -591,10 +613,12 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_NAME:
+        buddy_wake_if_needed(state, now_ms, action);
         buddy_copy(state->name, sizeof(state->name), event->command.value);
         buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_OWNER:
+        buddy_wake_if_needed(state, now_ms, action);
         buddy_copy(state->owner, sizeof(state->owner), event->command.value);
         buddy_set_ui_refresh(action);
         break;
@@ -682,15 +706,11 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         buddy_apply_permission_result(state, &event->permission_result, now_ms, action);
         break;
     case BUDDY_EVENT_KEY_CLICK:
-        if (state->screen_off) {
-            state->screen_off = false;
-            if (action != NULL) {
-                action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
-                action->brightness_percent =
-                    (uint8_t)(20U + state->brightness_level * 20U);
-            }
+        if (state->screen_off || state->dimmed) {
+            buddy_wake_if_needed(state, now_ms, action);
             break;
         }
+        state->last_user_activity_ms = now_ms;
         if (state->confirmation != BUDDY_CONFIRM_NONE && event->key == BUDDY_KEY_OK) {
             buddy_confirmation_t confirmation = state->confirmation;
             bool acknowledge = state->confirmation_acknowledge;
@@ -728,6 +748,11 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         }
         break;
     case BUDDY_EVENT_KEY_LONG:
+        if (state->screen_off) {
+            buddy_wake_if_needed(state, now_ms, action);
+            break;
+        }
+        state->last_user_activity_ms = now_ms;
         if (event->key == BUDDY_KEY_OK && state->confirmation == BUDDY_CONFIRM_NONE &&
             !buddy_has_prompt(state)) {
             if (state->page != BUDDY_PAGE_LAUNCHER) {
@@ -740,6 +765,7 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
             } else {
                 /* 在主大菜单下长按功能键：进入屏幕休眠以省电 */
                 state->screen_off = true;
+                state->dimmed = false;
                 if (action != NULL) {
                     action->type = BUDDY_ACTION_SCREEN_OFF;
                 }
@@ -747,15 +773,11 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         }
         break;
     case BUDDY_EVENT_KEY_DOUBLE:
-        if (state->screen_off) {
-            state->screen_off = false;
-            if (action != NULL) {
-                action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
-                action->brightness_percent =
-                    (uint8_t)(20U + state->brightness_level * 20U);
-            }
+        if (state->screen_off || state->dimmed) {
+            buddy_wake_if_needed(state, now_ms, action);
             break;
         }
+        state->last_user_activity_ms = now_ms;
         if (state->page == BUDDY_PAGE_PROFILE) {
             state->profile_qr_open = !state->profile_qr_open;
             buddy_set_ui_refresh(action);
@@ -764,10 +786,37 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
     case BUDDY_EVENT_TICK:
         if (state->page == BUDDY_PAGE_GAME_SNAKE) {
             buddy_snake_tick();
+            state->last_user_activity_ms = now_ms;
+            buddy_set_ui_refresh(action);
         } else if (state->page == BUDDY_PAGE_GAME_DINO) {
             buddy_dino_tick();
+            state->last_user_activity_ms = now_ms;
+            buddy_set_ui_refresh(action);
+        } else {
+            /* 非游戏页面检测空闲节能超时 */
+            if (!state->screen_off) {
+                uint64_t idle_ms = (now_ms > state->last_user_activity_ms && state->last_user_activity_ms > 0)
+                                       ? (now_ms - state->last_user_activity_ms)
+                                       : 0;
+                if (state->last_user_activity_ms == 0) {
+                    state->last_user_activity_ms = now_ms;
+                } else if (idle_ms >= 60000ULL) {
+                    /* 60秒无操作：自动息屏节能 */
+                    state->screen_off = true;
+                    state->dimmed = false;
+                    if (action != NULL) {
+                        action->type = BUDDY_ACTION_SCREEN_OFF;
+                    }
+                } else if (idle_ms >= 30000ULL && !state->dimmed) {
+                    /* 30秒无操作：自动微光节能 (20%) */
+                    state->dimmed = true;
+                    if (action != NULL) {
+                        action->type = BUDDY_ACTION_DISPLAY_BACKLIGHT;
+                        action->brightness_percent = 20U;
+                    }
+                }
+            }
         }
-        buddy_set_ui_refresh(action);
         break;
     case BUDDY_EVENT_NONE:
         break;

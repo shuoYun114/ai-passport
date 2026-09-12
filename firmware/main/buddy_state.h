@@ -49,6 +49,8 @@ typedef struct {
     bool profile_qr_open;
     bool transcript_enabled;
     bool screen_off;
+    bool dimmed;
+    uint64_t last_user_activity_ms;
     uint8_t brightness_level;
     uint8_t species;
     buddy_permission_delivery_t permission_delivery;

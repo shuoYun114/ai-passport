@@ -533,6 +533,8 @@ static int buddy_reconcile_advertising(void)
     memset(&parameters, 0, sizeof(parameters));
     parameters.conn_mode = BLE_GAP_CONN_MODE_UND;
     parameters.disc_mode = BLE_GAP_DISC_MODE_GEN;
+    parameters.itvl_min = 160; /* 100ms，显著降低射频发射频率与待机功耗 */
+    parameters.itvl_max = 320; /* 200ms，保持极佳的扫描连接体验 */
 
     xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
     physical_link = s_ble.conn_handle != BLE_HS_CONN_HANDLE_NONE ||
