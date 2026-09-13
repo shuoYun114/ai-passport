@@ -15,9 +15,10 @@
 - **物理固件产物**：
   - `firmware/build/FoloToy-AI-Passport-full.bin` (1,206,656 字节，约 1.15MB)
   - 严格满足 3MB (`0x300000`) 出厂分区限制，无任何越界风险。
-- **上位机生态**：
-  - Python 3.10+ 静默后台守护服务（免 CMD 黑框、断线自愈、单实例进程锁）
-  - 内置局域网 Web 个人档案配置控制台（端口 8765）
+- **上位机与多端中继生态**：
+  - **PC 桌面端**：Python 3.10+ 静默后台守护服务（免 CMD 黑框、断线自愈、单实例进程锁）+ 内置局域网 Web 个人档案配置控制台（端口 8765）；
+  - **手机移动端 (出门随身副屏中继)**：Token Monitor Android App（v1.1.7 正式版，源码位于 `D:\PYTHON\APP\token monitor`），支持出门脱离电脑时通过手机 BLE 自动网络授时对齐时钟、全天候全自动增量推送 Token 算力数据，并在手机端一键修改并无线固化副屏工牌档案（极客昵称与账号/邮箱）。
+  - **移动端最新出厂 APK**：根目录内置 [`TokenMonitor-v1.1.7-release.apk`](file:///d:/PYTHON/Ai%20passport/TokenMonitor-v1.1.7-release.apk)（22.6MB 官方签名，可直接传输手机安装）。
 
 ---
 
