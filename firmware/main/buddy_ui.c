@@ -17,44 +17,44 @@
 #define UI_W 240
 #define UI_H 320
 
-/* 晨曦暖白主题调色板 (Warm Light Palette): 暖白底 + 浓墨黑字 + 晨曦暖黄 */
+/* 晨曦暖白主题调色板 (Warm Light - Swiss Minimalist): 纯净纸感温润象牙白 + 浓郁深邃炭黑 + 瑞士琥珀暖金 */
 static const uint32_t s_palette_warm_light[16] = {
-    0xFBF9F5, /* 0: 象牙暖白底色 (清屏背景) */
-    0x1A1A1A, /* 1: 浓墨正文字色 (深黑) */
-    0x635E55, /* 2: 雅致暖灰副标 (对比度提升) */
-    0xDCD5C8, /* 3: 极细通透分割线 (1px 微边框) */
-    0xDD9110, /* 4: 晨曦暖黄/琥珀金 (高饱和高光焦点、胶囊标) */
-    0xEF4B38, /* 5: 柔朱红 (错误/报警) */
-    0x3E9146, /* 6: 翠竹绿 (正常/成功) */
-    0xF2B93B, /* 7: 浅金暖黄 (次级高亮) */
-    0x3078B4, /* 8: 靛青蓝 (信息/连接) */
+    0xF8F6F0, /* 0: 纯净纸感温润象牙白 (清屏背景) */
+    0x18181B, /* 1: 浓郁深邃炭黑正文 (Zinc 900) */
+    0x71717A, /* 2: 雅致中性暖灰副标 (Zinc 500) */
+    0xE4E4E7, /* 3: 1px 极细微边线 (Zinc 200) */
+    0xD97706, /* 4: 瑞士琥珀暖金 (Amber 600, 精密微光焦点) */
+    0xDC2626, /* 5: 柔朱红 (Red 600, 错误/报警) */
+    0x16A34A, /* 6: 翡翠绿 (Green 600, 成功/在线) */
+    0xF59E0B, /* 7: 明亮琥珀金 (Amber 500, 次级点缀) */
+    0x2563EB, /* 8: 钴蓝 (Blue 600, 链接/标识) */
     0xFFFFFF, /* 9: 纯白高光面 */
-    0xF2ECE0, /* 10: 浅米暖白卡片底板 */
-    0xE2D8C7, /* 11: 通透卡片边框 */
-    0xD89520, /* 12: 琥珀金边 */
-    0x2A2826, /* 13: 强调大标 */
-    0x969085, /* 14: 中性弱灰 */
-    0xEDE6DA, /* 15: 半透明点阵遮罩色 */
+    0xEDEAE2, /* 10: 选中项极淡微对比悬浮衬底 (轻盈呼吸) */
+    0xDFDBD0, /* 11: 悬浮微边框线 */
+    0xC27803, /* 12: 琥珀金边 */
+    0x27272A, /* 13: 强调重墨标 */
+    0xA1A1AA, /* 14: 弱灰辅助线 */
+    0xE5E0D5, /* 15: 半透明点阵遮罩色 */
 };
 
-/* 黑曜极简主题调色板 (Warm Dark Palette): 极简暖黑 + 象牙白字 + 晨曦暖黄 */
+/* 黑曜极简主题调色板 (Warm Dark - Minimalist Onyx): 纯粹深邃黑曜暖黑 + 细腻温润象牙白 + 晨曦暖金 */
 static const uint32_t s_palette_warm_dark[16] = {
-    0x121315, /* 0: 极简黑曜暖黑底色 (清屏背景) */
-    0xF7F3E9, /* 1: 温润象牙暖白正文 */
-    0x8C8880, /* 2: 微光暖灰副标 */
-    0x282A2E, /* 3: 通透深邃微对比线 */
-    0xF4B942, /* 4: 晨曦暖黄高光焦点 */
-    0xEF4B38, /* 5: 柔朱红 */
-    0x64C987, /* 6: 翡翠绿 */
-    0xF1C75B, /* 7: 温暖黄 */
-    0x72A7D8, /* 8: 冰湖蓝 */
+    0x09090B, /* 0: 极简纯粹黑曜暖黑底色 (清屏背景) */
+    0xFAFAFA, /* 1: 细腻温润象牙白正文 (Zinc 50) */
+    0x71717A, /* 2: 微光暗灰副标 (Zinc 500) */
+    0x27272A, /* 3: 深邃微边线 (Zinc 800) */
+    0xF59E0B, /* 4: 晨曦暖金焦点 (Amber 500) */
+    0xEF4444, /* 5: 柔朱红 (Red 500) */
+    0x22C55E, /* 6: 翡翠绿 (Green 500) */
+    0xFBBF24, /* 7: 明亮暖金 (Amber 400) */
+    0x3B82F6, /* 8: 冰湖蓝 (Blue 500) */
     0xFFFFFF, /* 9: 极亮纯白 */
-    0x191B1F, /* 10: 深色通透卡片底板 */
-    0x30333A, /* 11: 精致卡片边框 */
-    0xECAE36, /* 12: 琥珀暖金边 */
-    0xEDEAE1, /* 13: 极亮象牙字 */
-    0x5E626B, /* 14: 辅助灰 */
-    0x222428, /* 15: 半透明点阵遮罩色 */
+    0x18181B, /* 10: 选中项悬浮深曜底板 (Zinc 900) */
+    0x27272A, /* 11: 悬浮微边框 (Zinc 800) */
+    0xD97706, /* 12: 琥珀暖金边 */
+    0xF4F4F5, /* 13: 极亮象牙字 */
+    0x52525B, /* 14: 辅助灰 (Zinc 600) */
+    0x141416, /* 15: 半透明点阵遮罩色 */
 };
 
 static const uint32_t *s_active_palette = s_palette_warm_light;
@@ -227,11 +227,50 @@ static void box(lv_layer_t *layer, int x, int y, int w, int h, lv_color_t fill,
     int px;
     int py;
     (void)layer;
-    (void)radius;
+    if (radius <= 0) {
+        for (py = 0; py < h; ++py) {
+            for (px = 0; px < w; ++px) {
+                bool edge = px < border_width || py < border_width ||
+                            px >= w - border_width || py >= h - border_width;
+                pixel(x + px, y + py, edge ? border_index : fill_index);
+            }
+        }
+        return;
+    }
+    int r = radius;
+    int r2 = r * r;
     for (py = 0; py < h; ++py) {
         for (px = 0; px < w; ++px) {
-            bool edge = px < border_width || py < border_width ||
-                        px >= w - border_width || py >= h - border_width;
+            int dx = 0, dy = 0;
+            if (px < r && py < r) {
+                dx = r - 1 - px;
+                dy = r - 1 - py;
+            } else if (px >= w - r && py < r) {
+                dx = px - (w - r);
+                dy = r - 1 - py;
+            } else if (px < r && py >= h - r) {
+                dx = r - 1 - px;
+                dy = py - (h - r);
+            } else if (px >= w - r && py >= h - r) {
+                dx = px - (w - r);
+                dy = py - (h - r);
+            }
+            if (dx * dx + dy * dy > r2) {
+                continue;
+            }
+            bool edge = false;
+            if (border_width > 0) {
+                if (px < border_width || py < border_width ||
+                    px >= w - border_width || py >= h - border_width) {
+                    edge = true;
+                } else if (dx > 0 && dy > 0) {
+                    int inner_r = r - border_width;
+                    if (inner_r < 0) inner_r = 0;
+                    if (dx * dx + dy * dy > inner_r * inner_r) {
+                        edge = true;
+                    }
+                }
+            }
             pixel(x + px, y + py, edge ? border_index : fill_index);
         }
     }
@@ -327,19 +366,14 @@ static void draw_battery_widget(lv_layer_t *layer, int x, int y, uint8_t percent
     text(layer, x - 42, y - 2, 38, fill_col, p_buf, false, LV_TEXT_ALIGN_RIGHT);
 }
 
-static void draw_card_frame(int x, int y, int w, int h, lv_color_t accent)
-{
-    box(NULL, x, y, w, h, COL_CARD_BG, COL_CARD_BORDER, 1, 3);
-    box(NULL, x, y, 3, h, accent, accent, 0, 0);
-}
 
+/* 精密现代滑轨进度槽 (Height 4~6px, 干净平滑) */
 static void draw_progress_track(int x, int y, int w, int h, unsigned percent, lv_color_t fill_col)
 {
     int px, py;
     int fill_w;
-    uint8_t bg_idx = color_index(COL_CARD_BORDER);
+    uint8_t bg_idx = color_index(COL_LINE);
     uint8_t fill_idx = color_index(fill_col);
-    uint8_t mark_idx = color_index(COL_BG);
 
     if (percent > 100U) percent = 100U;
     fill_w = ((int)percent * w) / 100;
@@ -348,12 +382,6 @@ static void draw_progress_track(int x, int y, int w, int h, unsigned percent, lv
         for (px = 0; px < w; ++px) {
             pixel(x + px, y + py, px < fill_w ? fill_idx : bg_idx);
         }
-    }
-    /* 刻度分割线 25%、50%、75% */
-    for (py = 0; py < h; ++py) {
-        pixel(x + w / 4, y + py, mark_idx);
-        pixel(x + w / 2, y + py, mark_idx);
-        pixel(x + (w * 3) / 4, y + py, mark_idx);
     }
 }
 
@@ -452,6 +480,7 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char sub_buf[64];
     char token_buf[16];
+    char page_ind[16];
     int i;
     int total_items = BUDDY_LAUNCHER_ITEM_COUNT;
     int visible_items = 5;
@@ -466,78 +495,80 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     }
     if (top_idx < 0) top_idx = 0;
 
-    /* 顶部大标题 */
-    text(layer, 8, 27, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
-    rule(layer, 20, 47, 200, COL_LINE);
+    /* 顶部瑞士极简仪器表头 (小写品牌 + 精密序号 01/07) */
+    text(layer, 14, 28, 110, COL_INK, "ai passport", true, LV_TEXT_ALIGN_LEFT);
+    snprintf(page_ind, sizeof(page_ind), "%02d / %02d", sel + 1, total_items);
+    text(layer, 130, 30, 94, COL_DIM, page_ind, false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
 
-    /* 滚动视窗卡片 (同屏显示 5 个，自适应滑动，垂直布局舒展通透) */
+    /* 现代极简列表 (未选中项纯净无框、通透留白；选中项极淡微对比悬浮胶囊 + 琥珀金指示立柱) */
     for (int row = 0; row < visible_items; ++row) {
         i = top_idx + row;
         if (i >= total_items) break;
-        int y = 52 + row * 47;
+        int y = 53 + row * 47;
         bool selected = (i == sel);
-        lv_color_t accent = COL_ORANGE;
         const char *title = "";
         const char *subtitle = "";
+        char num_str[8];
+        snprintf(num_str, sizeof(num_str), "%02d", i + 1);
 
         if (i == BUDDY_LAUNCHER_ITEM_AI_MONITOR) {
-            accent = COL_ORANGE;
-            title = "1. AI 监控看板";
+            title = "AI 监控看板";
             format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
             unsigned rem = s->codex_usage.available ? (100U - s->codex_usage.primary_used_percent) : 0U;
             snprintf(sub_buf, sizeof(sub_buf), "今日 %s · 额度 %u%%", token_buf, rem);
             subtitle = sub_buf;
         } else if (i == BUDDY_LAUNCHER_ITEM_PROFILE) {
-            accent = COL_YELLOW;
-            title = "2. 个人智能主页";
+            title = "个人智能主页";
             subtitle = "电子工牌 · 伴侣名片";
         } else if (i == BUDDY_LAUNCHER_ITEM_VOKIE) {
-            accent = COL_BLUE;
-            title = "3. Vokie 语音助手";
+            title = "Vokie 语音助手";
             subtitle = "实时语音 · 极速转写";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_LIFE) {
-            accent = COL_GREEN;
-            title = "4. 赛博人生重开";
+            title = "赛博人生重开";
             subtitle = "天赋抽选 · 逆天改命";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_SNAKE) {
-            accent = COL_GREEN;
-            title = "5. 经典贪吃蛇";
+            title = "经典贪吃蛇";
             subtitle = "转向避障 · 挑战最高分";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_DINO) {
-            accent = COL_YELLOW;
-            title = "6. 跳跳恐龙跑酷";
+            title = "跳跳恐龙跑酷";
             subtitle = "越过仙人掌 · 刷新纪录";
         } else if (i == BUDDY_LAUNCHER_ITEM_SETTINGS) {
-            accent = COL_BLUE;
-            title = "7. 系统设置";
+            title = "系统设置";
             subtitle = "界面主题 · 屏幕亮度";
         }
 
-        /* 绘制卡片底框与边框 */
         if (selected) {
-            box(layer, 8, y, 216, 43, COL_CARD_BG, accent, 2, 4);
-            box(layer, 8, y, 4, 43, accent, accent, 0, 0);
-            text(layer, 18, y + 4, 180, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 23, 180, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
-            text(layer, 202, y + 12, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
+            /* 选中项：极轻盈微对比圆角底衬 (无重黑边) + 瑞士琥珀暖金精致立柱 */
+            box(layer, 8, y + 1, 216, 44, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+            box(layer, 8, y + 7, 3, 32, COL_ORANGE, COL_ORANGE, 0, 1);
+            text(layer, 16, y + 6, 24, COL_ORANGE, num_str, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 42, y + 6, 156, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 42, y + 25, 156, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            /* 右侧精密琥珀微圆点指示 */
+            draw_circle(210, y + 23, 2, COL_ORANGE);
         } else {
-            box(layer, 8, y, 216, 43, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
-            box(layer, 8, y, 2, 43, COL_LINE, COL_LINE, 0, 0);
-            text(layer, 18, y + 4, 180, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 23, 180, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            /* 未选中项：完全融入画布，告别水泥砖盒子堆砌 */
+            text(layer, 16, y + 6, 24, COL_DIM, num_str, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 42, y + 6, 156, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 42, y + 25, 156, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            if (row < visible_items - 1) {
+                rule(layer, 42, y + 46, 180, COL_LINE);
+            }
         }
     }
 
-    /* 右侧精致微型滚动条 */
-    int bar_track_y = 52;
-    int bar_track_h = 5 * 47 - 4;
-    box(layer, 228, bar_track_y, 3, bar_track_h, COL_LINE, COL_LINE, 0, 1);
+    /* 右侧极细极简滑轨与琥珀金滑块 */
+    int bar_track_y = 56;
+    int bar_track_h = 5 * 47 - 8;
+    box(layer, 230, bar_track_y, 2, bar_track_h, COL_LINE, COL_LINE, 0, 1);
     int thumb_h = bar_track_h * visible_items / total_items;
     int thumb_y = bar_track_y + (bar_track_h - thumb_h) * sel / (total_items - 1);
-    box(layer, 227, thumb_y, 5, thumb_h, COL_ORANGE, COL_ORANGE, 0, 2);
+    box(layer, 229, thumb_y, 4, thumb_h, COL_ORANGE, COL_ORANGE, 0, 2);
 
-    /* 底部操作提示 */
-    text(layer, 8, 298, 224, COL_DIM, "UP/DOWN:选择  OK:进入  长按:休眠", false, LV_TEXT_ALIGN_CENTER);
+    /* 底部极简工业操作提示 */
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "● 进入    ▲▼ 切换    长按休眠", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_vokie(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -546,15 +577,14 @@ static void draw_vokie(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     char buf[64];
     (void)s;
 
-    /* 1. 顶部标题栏 (Y: 26 ~ 50) */
-    text(layer, 12, 28, 150, COL_BLUE, "VOKIE AI VOICE", true, LV_TEXT_ALIGN_LEFT);
-    lv_color_t dot_color = v->connected ? (v->recording ? COL_ORANGE : COL_GREEN) : COL_DIM;
-    box(layer, 168, 28, 60, 17, COL_CARD_BG, dot_color, 1, 3);
-    text(layer, 168, 30, 60, dot_color, v->connected ? "已连接" : "离线待命", false, LV_TEXT_ALIGN_CENTER);
-    rule(layer, 12, 48, 216, COL_LINE);
+    /* 1. 顶部瑞士极简仪器表头 (Y: 28) */
+    text(layer, 14, 28, 120, COL_INK, "vokie speech", true, LV_TEXT_ALIGN_LEFT);
+    text(layer, 130, 30, 94, v->connected ? (v->recording ? COL_ORANGE : COL_GREEN) : COL_DIM,
+         v->connected ? (v->recording ? "RECORDING" : "ONLINE") : "STANDBY", false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
 
-    /* 2. 中央科技麦克风与动态声波徽标 (X: 76, Y: 58, W: 88, H: 76) */
-    box(layer, 76, 58, 88, 76, COL_CARD_BG, v->recording ? COL_ORANGE : COL_BLUE, 1, 4);
+    /* 2. 中央科技麦克风与动态声波徽标 (X: 14, Y: 56, W: 156, H: 76) */
+    box(layer, 14, 56, 156, 76, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
     int bar_heights[5] = {16, 28, 44, 28, 16};
     if (v->recording) {
         uint32_t t = (v->active_tick / 150) % 4;
@@ -564,15 +594,15 @@ static void draw_vokie(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         bar_heights[3] = 22 + (((t + 3) * 8) % 22);
         bar_heights[4] = 14 + ((t * 6) % 16);
     }
-    lv_color_t wave_col = v->recording ? COL_ORANGE : (v->connected ? COL_BLUE : COL_DIM);
+    lv_color_t wave_col = v->recording ? COL_ORANGE : (v->connected ? COL_INK : COL_DIM);
     for (int b = 0; b < 5; ++b) {
-        int bx = 90 + b * 12;
+        int bx = 62 + b * 12;
         int bh = bar_heights[b];
-        int by = 96 - bh / 2;
-        box(layer, bx, by, 6, bh, wave_col, wave_col, 0, 1);
+        int by = 94 - bh / 2;
+        box(layer, bx, by, 5, bh, wave_col, wave_col, 0, 1);
     }
 
-    /* 3. 核心状态文字 (Y: 142) */
+    /* 3. 核心状态文字 (Y: 138) */
     const char *state_str = "OFFLINE";
     lv_color_t state_col = COL_DIM;
     switch (v->status) {
@@ -598,44 +628,43 @@ static void draw_vokie(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         break;
     default:
         state_str = v->connected ? "READY" : "WAITING FOR HOST";
-        state_col = v->connected ? COL_BLUE : COL_DIM;
+        state_col = v->connected ? COL_INK : COL_DIM;
         break;
     }
-    text(layer, 12, 142, 175, state_col, state_str, true, LV_TEXT_ALIGN_CENTER);
+    text(layer, 14, 138, 156, state_col, state_str, true, LV_TEXT_ALIGN_CENTER);
 
-    /* 4. 实时信息卡片 (Y: 172 ~ 276, H: 104) */
-    box(layer, 12, 172, 175, 104, COL_CARD_BG, COL_CARD_BORDER, 1, 3);
-    box(layer, 12, 172, 3, 104, state_col, state_col, 0, 0);
-
-    text(layer, 20, 178, 160, COL_DIM, "当前活动状态", false, LV_TEXT_ALIGN_LEFT);
-    rule(layer, 20, 196, 155, COL_LINE);
+    /* 4. 实时信息卡片 (Y: 164 ~ 276, H: 112) */
+    box(layer, 14, 164, 156, 112, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+    text(layer, 22, 172, 140, COL_DIM, "TRANSCRIPT STATUS", false, LV_TEXT_ALIGN_LEFT);
+    rule(layer, 22, 192, 140, COL_LINE);
 
     snprintf(buf, sizeof(buf), "%s", v->message[0] ? v->message : "Vokie 待命中");
-    text(layer, 20, 204, 160, COL_INK, buf, true, LV_TEXT_ALIGN_LEFT);
+    text(layer, 22, 200, 140, COL_INK, buf, true, LV_TEXT_ALIGN_LEFT);
 
-    text(layer, 20, 226, 160, COL_DIM, "采样: 16kHz 16-bit", false, LV_TEXT_ALIGN_LEFT);
-    text(layer, 20, 244, 160, COL_DIM, "压缩: IMA ADPCM 20ms", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 22, 230, 140, COL_DIM, "采样: 16kHz 16-bit", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 22, 248, 140, COL_DIM, "编码: IMA ADPCM", false, LV_TEXT_ALIGN_LEFT);
 
-    /* 5. 右侧悬浮按键提示轨 (Button Hints Rail, X: 194, W: 36) */
-    const int rail_x = 194;
-    const int rail_w = 36;
-    box(layer, rail_x, 58, rail_w, 66, COL_CARD_BG, COL_ORANGE, 1, 3);
-    text(layer, rail_x, 66, rail_w, COL_ORANGE, "UP", true, LV_TEXT_ALIGN_CENTER);
-    text(layer, rail_x, 86, rail_w, COL_INK, v->recording ? "停止" : "录音", false, LV_TEXT_ALIGN_CENTER);
-    text(layer, rail_x, 104, rail_w, COL_DIM, "切换", false, LV_TEXT_ALIGN_CENTER);
+    /* 5. 右侧悬浮按键提示轨 (Button Hints Rail, X: 178, W: 48) */
+    const int rail_x = 178;
+    const int rail_w = 48;
+    box(layer, rail_x, 56, rail_w, 68, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+    text(layer, rail_x, 64, rail_w, COL_ORANGE, "UP", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 82, rail_w, COL_INK, v->recording ? "停止" : "录音", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 100, rail_w, COL_DIM, "投降", false, LV_TEXT_ALIGN_CENTER);
 
-    box(layer, rail_x, 134, rail_w, 66, COL_CARD_BG, COL_BLUE, 1, 3);
-    text(layer, rail_x, 142, rail_w, COL_BLUE, "DOWN", true, LV_TEXT_ALIGN_CENTER);
-    text(layer, rail_x, 162, rail_w, COL_INK, "进入", false, LV_TEXT_ALIGN_CENTER);
-    text(layer, rail_x, 180, rail_w, COL_DIM, "回车", false, LV_TEXT_ALIGN_CENTER);
+    box(layer, rail_x, 132, rail_w, 68, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+    text(layer, rail_x, 140, rail_w, COL_INK, "DOWN", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 158, rail_w, COL_INK, "发送", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 176, rail_w, COL_DIM, "进入", false, LV_TEXT_ALIGN_CENTER);
 
-    box(layer, rail_x, 210, rail_w, 66, COL_CARD_BG, COL_GREEN, 1, 3);
-    text(layer, rail_x, 218, rail_w, COL_GREEN, "OK", true, LV_TEXT_ALIGN_CENTER);
-    text(layer, rail_x, 238, rail_w, COL_INK, "点按", false, LV_TEXT_ALIGN_CENTER);
-    text(layer, rail_x, 256, rail_w, COL_DIM, "退/清", false, LV_TEXT_ALIGN_CENTER);
+    box(layer, rail_x, 208, rail_w, 68, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+    text(layer, rail_x, 216, rail_w, COL_INK, "OK", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 234, rail_w, COL_INK, "删/消", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 252, rail_w, COL_DIM, "双击清", false, LV_TEXT_ALIGN_CENTER);
 
-    /* 6. 底部系统提示 */
-    text(layer, 8, 296, 224, COL_DIM, "点OK:删/取消  双击:清空  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
+    /* 6. 底部极简工业按键提示 */
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "● 删/取消    双击清空    长按菜单", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_profile_qr_overlay(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -696,15 +725,13 @@ static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     char name_buf[48];
     char owner_buf[64];
 
-    /* 顶部标头栏 */
-    text(layer, 12, 28, 120, COL_ORANGE, "个人智能主页", true, LV_TEXT_ALIGN_LEFT);
-    box(layer, 146, 27, 82, 18, COL_CARD_BG, COL_ORANGE, 1, 3);
-    text(layer, 146, 29, 82, COL_ORANGE, "PASSPORT", false, LV_TEXT_ALIGN_CENTER);
-    rule(layer, 12, 48, 216, COL_LINE);
+    /* 顶部瑞士极简仪器表头 */
+    text(layer, 14, 28, 140, COL_INK, "ai identity", true, LV_TEXT_ALIGN_LEFT);
+    text(layer, 140, 30, 84, COL_ORANGE, "VERIFIED", false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
 
     /* 卡片 1: 电子工牌与伴侣立绘 (ID Badge & Companion, Y: 54 ~ 166, H: 112) */
-    box(layer, 8, 54, 224, 112, COL_CARD_BG, COL_CARD_BORDER, 1, 3);
-    box(layer, 8, 54, 3, 112, COL_YELLOW, COL_YELLOW, 0, 0);
+    box(layer, 8, 54, 224, 112, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
 
     /* 伴侣头像立绘框 (X: 16, Y: 60, W: 74, H: 100) */
     box(layer, 16, 60, 74, 100, COL_BG, COL_LINE, 1, 2);
@@ -717,25 +744,24 @@ static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         sp_y = 60 + (80 - bounds.h) / 2 - bounds.y;
     }
     buddy_sprite_render(&s_surface, &clip, s->species, art_state(s->character), s_tick, sp_x, sp_y);
-    text(layer, 16, 142, 74, COL_GREEN, buddy_sprite_name(s->species), false, LV_TEXT_ALIGN_CENTER);
+    text(layer, 16, 142, 74, COL_DIM, buddy_sprite_name(s->species), false, LV_TEXT_ALIGN_CENTER);
 
     /* 右侧身份信息 (X: 98, Y: 60 ~ 160) */
     snprintf(name_buf, sizeof(name_buf), "%s", s->name[0] ? s->name : "syhx114514");
     text(layer, 98, 62, 126, COL_INK, name_buf, true, LV_TEXT_ALIGN_LEFT);
 
-    /* 认证标签 */
-    box(layer, 98, 86, 84, 16, COL_CARD_BG, COL_GREEN, 1, 3);
-    text(layer, 98, 87, 84, COL_GREEN, "Pro 极客认证", false, LV_TEXT_ALIGN_CENTER);
+    /* 认证微药丸 */
+    box(layer, 98, 84, 76, 17, COL_BG, COL_LINE, 1, 3);
+    text(layer, 98, 86, 76, COL_ORANGE, "PRO HACKER", false, LV_TEXT_ALIGN_CENTER);
 
-    text(layer, 98, 110, 126, COL_DIM, "编号: C3-32EAAA", false, LV_TEXT_ALIGN_LEFT);
-    text(layer, 98, 128, 126, COL_YELLOW, "战力: S 级极客", false, LV_TEXT_ALIGN_LEFT);
-    text(layer, 98, 146, 126, s->ble_connected ? COL_GREEN : COL_DIM,
-         s->ble_connected ? "● 在线同步中" : "○ 蓝牙待命中", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 98, 108, 126, COL_DIM, "ID: C3-32EAAA", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 98, 126, 126, COL_INK, "TIER: S-RANK", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 98, 144, 126, s->ble_connected ? COL_GREEN : COL_DIM,
+         s->ble_connected ? "● BLE LINKED" : "○ OFFLINE", false, LV_TEXT_ALIGN_LEFT);
 
     /* 卡片 2: 通行证核心数据与资产 (Passport Data, Y: 172 ~ 284, H: 112) */
-    box(layer, 8, 172, 224, 112, COL_CARD_BG, COL_CARD_BORDER, 1, 3);
-    box(layer, 8, 172, 3, 112, COL_ORANGE, COL_ORANGE, 0, 0);
-    text(layer, 18, 178, 120, COL_ORANGE, "通行证数据", true, LV_TEXT_ALIGN_LEFT);
+    box(layer, 8, 172, 224, 112, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+    text(layer, 18, 178, 140, COL_INK, "PASSPORT DATA", true, LV_TEXT_ALIGN_LEFT);
     rule(layer, 18, 198, 204, COL_LINE);
 
     /* 行 1: 绑定账号 */
@@ -746,7 +772,7 @@ static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     /* 行 2: 今日 Token 消耗 */
     format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
     text(layer, 18, 224, 52, COL_DIM, "用量", false, LV_TEXT_ALIGN_LEFT);
-    text(layer, 72, 224, 150, COL_YELLOW, token_buf, false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 72, 224, 150, COL_ORANGE, token_buf, true, LV_TEXT_ALIGN_LEFT);
 
     /* 行 3: 主力模型状态 */
     text(layer, 18, 244, 52, COL_DIM, "主力", false, LV_TEXT_ALIGN_LEFT);
@@ -754,18 +780,19 @@ static void draw_profile(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
         unsigned p_rem = 100U - s->codex_usage.primary_used_percent;
         char m_buf[32];
         snprintf(m_buf, sizeof(m_buf), "Gemini (剩余 %u%%)", p_rem);
-        text(layer, 72, 244, 150, COL_GREEN, m_buf, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 72, 244, 150, COL_INK, m_buf, false, LV_TEXT_ALIGN_LEFT);
     } else {
-        text(layer, 72, 244, 150, COL_GREEN, "Gemini 3.8 Flash", false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 72, 244, 150, COL_INK, "Gemini 3.8 Flash", false, LV_TEXT_ALIGN_LEFT);
     }
 
     /* 行 4: 预估价值 */
     snprintf(cost_buf, sizeof(cost_buf), "¥%.2f · PRO套餐", (double)s->token_monitor.cost_today_cents / 100.0);
     text(layer, 18, 264, 52, COL_DIM, "资产", false, LV_TEXT_ALIGN_LEFT);
-    text(layer, 72, 264, 150, COL_BLUE, cost_buf, false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 72, 264, 150, COL_INK, cost_buf, false, LV_TEXT_ALIGN_LEFT);
 
     /* 底部操作提示 */
-    text(layer, 8, 296, 224, COL_DIM, "双击OK扫码修改  长按返回菜单", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "双击OK扫码修改    长按返回菜单", false, LV_TEXT_ALIGN_CENTER);
 
     /* 若双击打开了二维码弹窗，则覆盖绘制二维码悬浮窗 */
     if (s->profile_qr_open) {
@@ -1222,80 +1249,73 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char quota_buf[48];
     char reset_buf[48];
-    char status_buf[64];
     char token_buf[16];
     char label_buf[64];
+    char cost_buf[32];
     const buddy_codex_usage_t *u = &s->codex_usage;
 
-    /* 顶部标题区 */
-    text(layer, 8, 28, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
-
-    /* 运行状态微徽章：待命时直接醒目展示今日 Token 消耗 */
+    /* 顶部瑞士极简仪器表头 (小写品牌 + 状态微标) */
+    text(layer, 14, 28, 120, COL_INK, "ai monitor", true, LV_TEXT_ALIGN_LEFT);
     if (s->running > 0) {
-        box(NULL, 60, 48, 120, 18, COL_CARD_BG, COL_GREEN, 1, 3);
-        snprintf(status_buf, sizeof(status_buf), "工作中 · %u 任务", s->running);
-        text(layer, 60, 50, 120, COL_GREEN, status_buf, false, LV_TEXT_ALIGN_CENTER);
+        char run_str[24];
+        snprintf(run_str, sizeof(run_str), "RUNNING (%u)", s->running);
+        text(layer, 130, 30, 94, COL_GREEN, run_str, true, LV_TEXT_ALIGN_RIGHT);
     } else {
-        format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
-        box(NULL, 46, 48, 148, 18, COL_CARD_BG, COL_GREEN, 1, 3);
-        snprintf(status_buf, sizeof(status_buf), "今日 Token: %s", token_buf);
-        text(layer, 46, 50, 148, COL_GREEN, status_buf, false, LV_TEXT_ALIGN_CENTER);
+        text(layer, 130, 30, 94, COL_DIM, "STANDBY", false, LV_TEXT_ALIGN_RIGHT);
     }
+    rule(layer, 14, 48, 212, COL_LINE);
 
-    /* 卡片 1: 主力配额 (Hero Quota Card) */
+    /* 核心数据概览 (Hero Metric Section) - 通透留白排版，杜绝盒子套盒子 */
+    text(layer, 14, 56, 120, COL_DIM, "TODAY CONSUMPTION", false, LV_TEXT_ALIGN_LEFT);
+    format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
+    text(layer, 14, 72, 120, COL_INK, token_buf, true, LV_TEXT_ALIGN_LEFT);
+
+    snprintf(cost_buf, sizeof(cost_buf), "%.2f CNY", (double)s->token_monitor.cost_today_cents / 100.0);
+    text(layer, 134, 72, 92, COL_ORANGE, cost_buf, true, LV_TEXT_ALIGN_RIGHT);
+    text(layer, 134, 90, 92, COL_DIM, "EST. COST", false, LV_TEXT_ALIGN_RIGHT);
+
+    rule(layer, 14, 112, 212, COL_LINE);
+
+    /* 模块 1: 主力模型 (Gemini Flash) */
+    text(layer, 14, 122, 130, COL_INK, "GEMINI FLASH", true, LV_TEXT_ALIGN_LEFT);
     if (!u->available) {
-        draw_card_frame(8, 68, 224, 98, COL_DIM);
-        wrapped_text(layer, 18, 98, 204, COL_INK,
-                     "等待桌面端配额同步\n请保持桌面端桥接程序运行", 4);
+        text(layer, 144, 122, 82, COL_DIM, "待同步", false, LV_TEXT_ALIGN_RIGHT);
+        draw_progress_track(14, 142, 212, 4, 0, COL_LINE);
+        text(layer, 14, 150, 212, COL_DIM, "等待电脑端同步中...", false, LV_TEXT_ALIGN_LEFT);
     } else {
         unsigned rem = 100U - u->primary_used_percent;
-        lv_color_t accent = rem <= 15U ? COL_RED : (rem <= 35U ? COL_YELLOW : COL_GREEN);
-
-        draw_card_frame(8, 68, 224, 98, accent);
-
-        /* 标题行 */
-        text(layer, 18, 75, 110, COL_INK, "主力模型 (Gemini)", false, LV_TEXT_ALIGN_LEFT);
+        lv_color_t acc = (rem <= 15U) ? COL_RED : ((rem <= 35U) ? COL_YELLOW : COL_ORANGE);
         snprintf(quota_buf, sizeof(quota_buf), "剩余 %u%%", rem);
-        text(layer, 120, 74, 102, accent, quota_buf, true, LV_TEXT_ALIGN_RIGHT);
+        text(layer, 144, 122, 82, acc, quota_buf, true, LV_TEXT_ALIGN_RIGHT);
 
-        /* 平滑进度槽 */
-        draw_progress_track(18, 98, 204, 10, rem, accent);
+        /* 4px 精密极细滑轨 */
+        draw_progress_track(14, 142, 212, 4, rem, acc);
 
-        /* 细分割暗线 */
-        rule(layer, 18, 118, 204, COL_LINE);
-
-        /* 底部倒计时与主力模型 Token 用量 */
         usage_reset_text(reset_buf, sizeof(reset_buf), u->primary_resets_at, s);
-        text(layer, 18, 126, 124, COL_DIM, reset_buf, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 14, 150, 120, COL_DIM, reset_buf, false, LV_TEXT_ALIGN_LEFT);
 
         uint64_t pm_tokens = (s->token_monitor.active_tools_count > 0)
                                  ? s->token_monitor.tools[0].tokens_today
                                  : s->token_monitor.tokens_today;
         format_token_metric(token_buf, sizeof(token_buf), pm_tokens);
         snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
-        text(layer, 144, 126, 78, accent, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+        text(layer, 140, 150, 86, COL_DIM, label_buf, false, LV_TEXT_ALIGN_RIGHT);
     }
 
-    /* 卡片 2: 辅助模型与活跃卡片 (Claude/GPT) */
+    rule(layer, 14, 172, 212, COL_LINE);
+
+    /* 模块 2: 辅助模型 (Claude Sonnet) */
     {
         unsigned sec_rem = u->available ? (100U - u->secondary_used_percent) : 100U;
-        draw_card_frame(8, 176, 224, 98, COL_BLUE);
-
-        /* 标题行 */
-        text(layer, 18, 183, 110, COL_INK, "Claude/GPT", false, LV_TEXT_ALIGN_LEFT);
         snprintf(quota_buf, sizeof(quota_buf), "剩余 %u%%", sec_rem);
-        text(layer, 120, 182, 102, COL_BLUE, quota_buf, true, LV_TEXT_ALIGN_RIGHT);
 
-        /* 平滑进度槽 */
-        draw_progress_track(18, 206, 204, 10, sec_rem, COL_BLUE);
+        text(layer, 14, 182, 130, COL_INK, "CLAUDE SONNET", true, LV_TEXT_ALIGN_LEFT);
+        text(layer, 144, 182, 82, COL_INK, quota_buf, true, LV_TEXT_ALIGN_RIGHT);
 
-        /* 细分割暗线 */
-        rule(layer, 18, 226, 204, COL_LINE);
+        /* 4px 精密极细滑轨 */
+        draw_progress_track(14, 202, 212, 4, sec_rem, COL_INK);
 
-        /* 今日总 Token 消耗与辅助模型实际消耗状态 */
-        format_token_metric(token_buf, sizeof(token_buf), s->token_monitor.tokens_today);
-        snprintf(status_buf, sizeof(status_buf), "今日总计 %s", token_buf);
-        text(layer, 18, 234, 130, COL_INK, status_buf, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 14, 210, 120, COL_DIM, "周期滚动配额", false, LV_TEXT_ALIGN_LEFT);
 
         uint64_t sec_tokens = (s->token_monitor.active_tools_count > 1)
                                   ? s->token_monitor.tools[1].tokens_today
@@ -1304,13 +1324,27 @@ static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
             char sec_tok_buf[16];
             format_token_metric(sec_tok_buf, sizeof(sec_tok_buf), sec_tokens);
             snprintf(label_buf, sizeof(label_buf), "用量 %s", sec_tok_buf);
-            text(layer, 144, 234, 78, COL_BLUE, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+            text(layer, 140, 210, 86, COL_DIM, label_buf, false, LV_TEXT_ALIGN_RIGHT);
         } else {
-            text(layer, 158, 234, 64, COL_ORANGE, "未消耗", false, LV_TEXT_ALIGN_RIGHT);
+            text(layer, 140, 210, 86, COL_DIM, "今日未消耗", false, LV_TEXT_ALIGN_RIGHT);
         }
     }
 
-    text(layer, 8, 298, 224, COL_DIM, "长按功能键返回主菜单", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 14, 232, 212, COL_LINE);
+
+    /* 模块 3: 硬件与同步状态微信息条 */
+    text(layer, 14, 244, 110, COL_DIM, "HOST STATUS", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 120, 244, 106, s->ble_connected ? COL_GREEN : COL_DIM,
+         s->ble_connected ? "● BLE LINKED" : "○ DISCONNECTED", false, LV_TEXT_ALIGN_RIGHT);
+
+    char dev_info[48];
+    snprintf(dev_info, sizeof(dev_info), "DEVICE UPTIME %lus", (unsigned long)(esp_timer_get_time() / 1000000ULL));
+    text(layer, 14, 264, 140, COL_DIM, dev_info, false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 154, 264, 72, COL_DIM, "REV 2.1", false, LV_TEXT_ALIGN_RIGHT);
+
+    /* 底部极简操作说明 */
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "● 刷新数据    长按返回菜单", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -1321,7 +1355,10 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     char label_buf[64];
     const buddy_codex_usage_t *u = &s->codex_usage;
 
-    text(layer, 8, 34, 224, COL_ORANGE, "模型配额中心", true, LV_TEXT_ALIGN_CENTER);
+    /* 顶部瑞士极简仪器表头 */
+    text(layer, 14, 28, 120, COL_INK, "quota center", true, LV_TEXT_ALIGN_LEFT);
+    text(layer, 130, 30, 94, COL_DIM, "02 / 03", false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
 
     if (!u->available) {
         wrapped_text(layer, 22, 120, 196, COL_INK,
@@ -1329,35 +1366,35 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     } else {
         unsigned primary_remaining = 100U - u->primary_used_percent;
         unsigned secondary_remaining = 100U - u->secondary_used_percent;
-        lv_color_t acc1 = primary_remaining <= 15U ? COL_RED : (primary_remaining <= 35U ? COL_YELLOW : COL_GREEN);
+        lv_color_t acc1 = primary_remaining <= 15U ? COL_RED : (primary_remaining <= 35U ? COL_YELLOW : COL_ORANGE);
 
         /* 主力模型卡片 (Gemini) */
-        draw_card_frame(8, 68, 224, 102, acc1);
-        text(layer, 18, 77, 110, COL_INK, "短期滚动 (Gemini)", false, LV_TEXT_ALIGN_LEFT);
+        box(layer, 8, 56, 224, 106, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+        text(layer, 18, 65, 110, COL_INK, "短期滚动 (Gemini)", true, LV_TEXT_ALIGN_LEFT);
         snprintf(value, sizeof(value), "剩余 %u%%", primary_remaining);
-        text(layer, 120, 76, 102, acc1, value, true, LV_TEXT_ALIGN_RIGHT);
-        draw_progress_track(18, 102, 204, 10, primary_remaining, acc1);
-        rule(layer, 18, 124, 204, COL_LINE);
+        text(layer, 120, 64, 102, acc1, value, true, LV_TEXT_ALIGN_RIGHT);
+        draw_progress_track(18, 90, 204, 4, primary_remaining, acc1);
+        rule(layer, 18, 112, 204, COL_LINE);
         usage_reset_text(reset, sizeof(reset), u->primary_resets_at, s);
-        text(layer, 18, 134, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 18, 122, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
         {
             uint64_t pm_tk = (s->token_monitor.active_tools_count > 0)
                                  ? s->token_monitor.tools[0].tokens_today
                                  : s->token_monitor.tokens_today;
             format_token_metric(token_buf, sizeof(token_buf), pm_tk);
             snprintf(label_buf, sizeof(label_buf), "用量 %s", token_buf);
-            text(layer, 144, 134, 78, acc1, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+            text(layer, 144, 122, 78, COL_DIM, label_buf, false, LV_TEXT_ALIGN_RIGHT);
         }
 
         /* 辅助模型卡片 (Claude/GPT) */
-        draw_card_frame(8, 180, 224, 102, COL_BLUE);
-        text(layer, 18, 189, 110, COL_INK, "Claude/GPT 配额", false, LV_TEXT_ALIGN_LEFT);
+        box(layer, 8, 172, 224, 106, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+        text(layer, 18, 181, 110, COL_INK, "Claude/GPT 配额", true, LV_TEXT_ALIGN_LEFT);
         snprintf(value, sizeof(value), "剩余 %u%%", secondary_remaining);
-        text(layer, 120, 188, 102, COL_BLUE, value, true, LV_TEXT_ALIGN_RIGHT);
-        draw_progress_track(18, 214, 204, 10, secondary_remaining, COL_BLUE);
-        rule(layer, 18, 236, 204, COL_LINE);
+        text(layer, 120, 180, 102, COL_INK, value, true, LV_TEXT_ALIGN_RIGHT);
+        draw_progress_track(18, 206, 204, 4, secondary_remaining, COL_INK);
+        rule(layer, 18, 228, 204, COL_LINE);
         usage_reset_text(reset, sizeof(reset), u->secondary_resets_at, s);
-        text(layer, 18, 246, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 18, 238, 124, COL_DIM, reset, false, LV_TEXT_ALIGN_LEFT);
         {
             uint64_t sec_tk = (s->token_monitor.active_tools_count > 1)
                                   ? s->token_monitor.tools[1].tokens_today
@@ -1368,10 +1405,11 @@ static void draw_limits(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
             } else {
                 snprintf(label_buf, sizeof(label_buf), "未消耗");
             }
-            text(layer, 144, 246, 78, COL_BLUE, label_buf, false, LV_TEXT_ALIGN_RIGHT);
+            text(layer, 144, 238, 78, COL_DIM, label_buf, false, LV_TEXT_ALIGN_RIGHT);
         }
     }
-    text(layer, 8, 298, 224, COL_DIM, "UP: 工具明细 · DOWN: 滚动", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "UP: 工具明细    DOWN: 滚动", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_tools_breakdown(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -1381,20 +1419,23 @@ static void draw_tools_breakdown(lv_layer_t *layer, const buddy_ui_snapshot_t *s
     char token_buf[32];
     char cost_buf[32];
 
-    text(layer, 8, 34, 224, COL_ORANGE, "AI 工具状态明细", true, LV_TEXT_ALIGN_CENTER);
+    /* 顶部瑞士极简仪器表头 */
+    text(layer, 14, 28, 120, COL_INK, "tool breakdown", true, LV_TEXT_ALIGN_LEFT);
+    text(layer, 130, 30, 94, COL_DIM, "03 / 03", false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
 
     if (count == 0) {
         wrapped_text(layer, 22, 110, 196, COL_INK,
                      "暂无工具消耗分类。\n在电脑端使用 Claude/Codex 等工具后将在此自动汇总。", 6);
     } else {
-        draw_card_frame(8, 66, 224, 218, COL_ORANGE);
-        text(layer, 18, 74, 82, COL_DIM, "工具名称", false, LV_TEXT_ALIGN_LEFT);
-        text(layer, 102, 74, 64, COL_DIM, "今日用量", false, LV_TEXT_ALIGN_CENTER);
-        text(layer, 168, 74, 54, COL_DIM, "配额余量", false, LV_TEXT_ALIGN_RIGHT);
-        rule(layer, 14, 94, 212, COL_LINE);
+        box(layer, 8, 56, 224, 226, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+        text(layer, 18, 64, 82, COL_DIM, "工具名称", false, LV_TEXT_ALIGN_LEFT);
+        text(layer, 102, 64, 64, COL_DIM, "今日用量", false, LV_TEXT_ALIGN_CENTER);
+        text(layer, 168, 64, 54, COL_DIM, "配额余量", false, LV_TEXT_ALIGN_RIGHT);
+        rule(layer, 14, 84, 212, COL_LINE);
 
         for (i = 0; i < count && i < 5; ++i) {
-            int y = 104 + (int)i * 32;
+            int y = 94 + (int)i * 34;
             const buddy_tool_usage_entry_t *t = &s->token_monitor.tools[i];
             unsigned rem = 100U - t->used_percent;
             format_token_metric(token_buf, sizeof(token_buf), t->tokens_today);
@@ -1402,13 +1443,14 @@ static void draw_tools_breakdown(lv_layer_t *layer, const buddy_ui_snapshot_t *s
 
             text(layer, 18, y, 82, COL_INK, t->name[0] ? t->name : "AI Tool", false, LV_TEXT_ALIGN_LEFT);
             text(layer, 102, y, 64, COL_INK, token_buf, false, LV_TEXT_ALIGN_CENTER);
-            text(layer, 168, y, 54, rem < 20U ? COL_RED : COL_GREEN, cost_buf, false, LV_TEXT_ALIGN_RIGHT);
+            text(layer, 168, y, 54, rem < 20U ? COL_RED : COL_ORANGE, cost_buf, false, LV_TEXT_ALIGN_RIGHT);
             if (i < count - 1 && i < 4) {
-                rule(layer, 18, y + 24, 204, COL_LINE);
+                rule(layer, 18, y + 26, 204, COL_LINE);
             }
         }
     }
-    text(layer, 8, 298, 224, COL_DIM, "UP: 宠物伴侣 · DOWN: 滚动", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "UP: 宠物伴侣    DOWN: 滚动", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_info(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -1417,10 +1459,10 @@ static void draw_info(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     char body[512];
     char page[16];
     unsigned p = s->info_page < 6 ? s->info_page : 0;
-    text(layer, 14, 38, 180, COL_ORANGE, titles[p], true, LV_TEXT_ALIGN_LEFT);
-    snprintf(page, sizeof(page), "%u / 6", p + 1);
-    text(layer, 174, 43, 52, COL_DIM, page, false, LV_TEXT_ALIGN_RIGHT);
-    rule(layer, 14, 66, 212, COL_LINE);
+    text(layer, 14, 28, 120, COL_INK, titles[p], true, LV_TEXT_ALIGN_LEFT);
+    snprintf(page, sizeof(page), "%02u / 06", p + 1);
+    text(layer, 130, 30, 94, COL_DIM, page, false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
     switch (p) {
     case 0: snprintf(body, sizeof(body), "你的桌面助手。\n\n显示 5 小时与 7 天使用量，\n并在任务完成时提醒你。"); break;
     case 1: snprintf(body, sizeof(body), "上键：切换界面\n下键：翻页或拒绝\n确认键：允许或更改\n长按确认键：打开菜单"); break;
@@ -1441,23 +1483,32 @@ static void draw_info(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     case 4: snprintf(body, sizeof(body), "%s\n\n%s\n%s\n\n请在电脑上运行\nCodex 桥接程序", s->name[0] ? s->name : "Codex 助手", s->ble_connected ? "已连接" : "正在广播", s->ble_encrypted ? "连接已加密" : "连接未加密"); break;
     default: snprintf(body, sizeof(body), "Codex 使用量助手\n\n适用于 FoloToy AI Passport\nESP32-C3 硬件\n\n基于公开的 Buddy 参考分支"); break;
     }
-    wrapped_text(layer, 16, 82 - s_scroll, 208, COL_INK, body, 18);
-    text(layer, 8, 300, 224, COL_DIM, BUDDY_ACTION_INFO, false, LV_TEXT_ALIGN_CENTER);
+    wrapped_text(layer, 16, 68 - s_scroll, 208, COL_INK, body, 18);
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, BUDDY_ACTION_INFO, false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_list(lv_layer_t *layer, const char *title, const char *const *items,
                       unsigned count, unsigned selected, const buddy_ui_snapshot_t *s)
 {
-    unsigned first = selected > 5 ? selected - 5 : 0;
+    unsigned first = selected > 6 ? selected - 6 : 0;
     unsigned i;
-    text(layer, 14, 34, 212, COL_ORANGE, title, true, LV_TEXT_ALIGN_LEFT);
-    rule(layer, 14, 62, 212, COL_LINE);
+    char page_ind[16];
+    char num_str[8];
+
+    /* 顶部瑞士极简仪器表头 */
+    text(layer, 14, 28, 120, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+    snprintf(page_ind, sizeof(page_ind), "%02u / %02u", selected + 1, count);
+    text(layer, 130, 30, 94, COL_DIM, page_ind, false, LV_TEXT_ALIGN_RIGHT);
+    rule(layer, 14, 48, 212, COL_LINE);
+
     for (i = first; i < count && i < first + 7; ++i) {
-        int y = 76 + (int)(i - first) * 29;
+        int y = 53 + (int)(i - first) * 34;
         bool active = i == selected;
         char row[64];
         const char *suffix = "";
         char value[12];
+
         if (!s->reset_open && i == BUDDY_SETTINGS_THEME) {
             suffix = (s->ui_theme == BUDDY_THEME_WARM_DARK) ? "黑色" : "白色";
         }
@@ -1466,11 +1517,30 @@ static void draw_list(lv_layer_t *layer, const char *title, const char *const *i
         else if (!s->reset_open && i == BUDDY_SETTINGS_TRANSCRIPT) suffix = s->transcript_enabled ? "开" : "关";
         else if (!s->reset_open && i == BUDDY_SETTINGS_ASCII_PET) suffix = buddy_sprite_name(s->species);
         snprintf(row, sizeof(row), "%s", items[i]);
-        if (active) box(layer, 12, y - 7, 216, 24, COL_ORANGE, COL_ORANGE, 0, 3);
-        text(layer, 20, y, 142, active ? COL_BG : COL_INK, row, false, LV_TEXT_ALIGN_LEFT);
-        text(layer, 158, y, 62, active ? COL_BG : COL_DIM, suffix, false, LV_TEXT_ALIGN_RIGHT);
+        snprintf(num_str, sizeof(num_str), "%02u", i + 1);
+
+        if (active) {
+            /* 选中项：悬浮微底衬 + 左侧琥珀金立柱 + 右侧琥珀微指示点 */
+            box(layer, 8, y, 224, 31, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+            box(layer, 8, y + 5, 3, 21, COL_ORANGE, COL_ORANGE, 0, 1);
+            text(layer, 16, y + 5, 24, COL_ORANGE, num_str, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 42, y + 5, 106, COL_INK, row, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 144, y + 5, 64, COL_ORANGE, suffix, true, LV_TEXT_ALIGN_RIGHT);
+            draw_circle(218, y + 15, 2, COL_ORANGE);
+        } else {
+            /* 未选中项：完全融入画布 + 细暗线分割 */
+            text(layer, 16, y + 5, 24, COL_DIM, num_str, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 42, y + 5, 106, COL_INK, row, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 144, y + 5, 76, COL_DIM, suffix, false, LV_TEXT_ALIGN_RIGHT);
+            if (i < first + 6 && i < count - 1) {
+                rule(layer, 42, y + 33, 184, COL_LINE);
+            }
+        }
     }
-    text(layer, 8, 300, 224, COL_DIM, BUDDY_ACTION_SETTINGS, false, LV_TEXT_ALIGN_CENTER);
+
+    /* 底部极简工业按键提示 */
+    rule(layer, 14, 292, 212, COL_LINE);
+    text(layer, 14, 298, 212, COL_DIM, "● 切换/确认    ▲▼ 选择    长按返回", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_settings(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -1527,14 +1597,20 @@ static void draw_overlay(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     } else if (overlay == BUDDY_OVERLAY_MENU) {
         static const char *const menu[] = {"设置", "关闭屏幕", "帮助", "关于", "演示", "关闭菜单"};
         unsigned i;
-        box(layer, 38, 48, 164, 224, COL_CARD_BG, COL_CARD_BORDER, 2, 6);
-        text(layer, 52, 61, 136, COL_ORANGE, "菜单", true, LV_TEXT_ALIGN_CENTER);
-        rule(layer, 52, 88, 136, COL_LINE);
+        box(layer, 38, 48, 164, 224, COL_CARD_BG, COL_CARD_BORDER, 1, 4);
+        text(layer, 52, 58, 136, COL_INK, "quick menu", true, LV_TEXT_ALIGN_CENTER);
+        rule(layer, 50, 82, 140, COL_LINE);
         for (i = 0; i < BUDDY_MENU_COUNT; ++i) {
-            int y = 103 + (int)i * 25;
+            int y = 98 + (int)i * 26;
             bool active = i == (unsigned)s->menu_selection;
-            if (active) box(layer, 48, y - 7, 144, 21, COL_ORANGE, COL_ORANGE, 0, 3);
-            text(layer, 56, y, 128, active ? COL_BG : COL_INK, menu[i], false, LV_TEXT_ALIGN_CENTER);
+            if (active) {
+                box(layer, 46, y - 5, 148, 23, COL_BG, COL_CARD_BORDER, 1, 3);
+                box(layer, 46, y - 2, 2, 16, COL_ORANGE, COL_ORANGE, 0, 1);
+                text(layer, 52, y, 136, COL_INK, menu[i], true, LV_TEXT_ALIGN_CENTER);
+                draw_circle(184, y + 6, 2, COL_ORANGE);
+            } else {
+                text(layer, 52, y, 136, COL_DIM, menu[i], false, LV_TEXT_ALIGN_CENTER);
+            }
         }
     } else if (s->character == BUDDY_CHARACTER_CELEBRATE) {
         panel(layer, 194, 86, COL_GREEN, "任务已完成",

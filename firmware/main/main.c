@@ -1078,6 +1078,15 @@ static void buddy_screenshot_task(void *context)
                 fflush(stdout);
             }
             continue;
+        } else if (strncmp(cmd, "FAP_THEME ", 10) == 0) {
+            if (s_app_state != NULL) {
+                s_app_state->ui_theme = (uint8_t)(atoi(cmd + 10) % BUDDY_THEME_COUNT);
+                s_app_state->settings.ui_theme = s_app_state->ui_theme;
+                buddy_notify_app();
+                printf("OK_THEME %u\n", (unsigned)s_app_state->ui_theme);
+                fflush(stdout);
+            }
+            continue;
         } else if (strncmp(cmd, "FAP_PAGE ", 9) == 0) {
             if (s_app_state != NULL) {
                 s_app_state->page = (buddy_page_t)atoi(cmd + 9);
