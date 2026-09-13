@@ -231,7 +231,6 @@ void buddy_dino_tick(void)
         const int dino_left = 28;
         const int dino_right = 44;
         const int dino_bottom = s_dino.y;
-        const int dino_top = s_dino.y + 20;
 
         int obs_left = s_dino.obstacles[i].x;
         int obs_right = s_dino.obstacles[i].x + s_dino.obstacles[i].w;

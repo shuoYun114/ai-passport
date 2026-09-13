@@ -9,6 +9,7 @@
 #include "buddy_sprite.h"
 #include "buddy_text_layout.h"
 #include "buddy_games.h"
+#include "buddy_game_life.h"
 #include "buddy_vokie.h"
 #include "qrcode.h"
 #include "lvgl.h"
@@ -409,16 +410,30 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     char sub_buf[64];
     char token_buf[16];
     int i;
+    int total_items = BUDDY_LAUNCHER_ITEM_COUNT;
+    int visible_items = 5;
+    int sel = (int)s->launcher_selection;
+    int top_idx = 0;
+
+    if (sel >= visible_items) {
+        top_idx = sel - visible_items + 1;
+    }
+    if (top_idx > total_items - visible_items) {
+        top_idx = total_items - visible_items;
+    }
+    if (top_idx < 0) top_idx = 0;
 
     /* 顶部大标题与系统副标 */
     text(layer, 8, 26, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
     text(layer, 8, 42, 224, COL_DIM, "系统主菜单", false, LV_TEXT_ALIGN_CENTER);
     rule(layer, 16, 54, 208, COL_LINE);
 
-    /* 6 个主功能卡片 (自适应紧凑排版) */
-    for (i = 0; i < BUDDY_LAUNCHER_ITEM_COUNT; ++i) {
-        int y = 57 + i * 39;
-        bool selected = (i == (int)s->launcher_selection);
+    /* 滚动视窗卡片 (同屏显示 5 个，自适应滑动) */
+    for (int row = 0; row < visible_items; ++row) {
+        i = top_idx + row;
+        if (i >= total_items) break;
+        int y = 57 + row * 44;
+        bool selected = (i == sel);
         lv_color_t accent = COL_ORANGE;
         const char *title = "";
         const char *subtitle = "";
@@ -438,34 +453,46 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
             accent = COL_BLUE;
             title = "3. Vokie 语音助手";
             subtitle = "实时语音 · 极速转写提交";
+        } else if (i == BUDDY_LAUNCHER_ITEM_GAME_LIFE) {
+            accent = lv_color_hex(0x00d8a0); // 赛博青翠绿
+            title = "4. 赛博人生重开";
+            subtitle = "天赋抽选 · 逆天改命 · 飞升";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_SNAKE) {
             accent = COL_GREEN;
-            title = "4. 经典贪吃蛇";
+            title = "5. 经典贪吃蛇";
             subtitle = "转向避障 · 挑战最高分";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_DINO) {
             accent = COL_YELLOW;
-            title = "5. 跳跳恐龙跑酷";
+            title = "6. 跳跳恐龙跑酷";
             subtitle = "越过仙人掌 · 刷新纪录";
         } else if (i == BUDDY_LAUNCHER_ITEM_SETTINGS) {
             accent = COL_BLUE;
-            title = "6. 系统设置";
+            title = "7. 系统设置";
             subtitle = "屏幕亮度 · 蓝牙控制";
         }
 
         /* 绘制卡片底框与边框 */
         if (selected) {
-            box(layer, 8, y, 224, 37, lv_color_hex(0x181c22), accent, 2, 0);
-            box(layer, 8, y, 4, 37, accent, accent, 0, 0);
-            text(layer, 18, y + 3, 185, accent, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 20, 185, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
-            text(layer, 208, y + 9, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
+            box(layer, 8, y, 216, 41, lv_color_hex(0x181c22), accent, 2, 0);
+            box(layer, 8, y, 4, 41, accent, accent, 0, 0);
+            text(layer, 18, y + 4, 180, accent, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 22, 180, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 202, y + 11, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
         } else {
-            box(layer, 8, y, 224, 37, lv_color_hex(0x101215), COL_LINE, 1, 0);
-            box(layer, 8, y, 3, 37, COL_DIM, COL_DIM, 0, 0);
-            text(layer, 18, y + 3, 185, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 20, 185, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            box(layer, 8, y, 216, 41, lv_color_hex(0x101215), COL_LINE, 1, 0);
+            box(layer, 8, y, 3, 41, COL_DIM, COL_DIM, 0, 0);
+            text(layer, 18, y + 4, 180, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 22, 180, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
         }
     }
+
+    /* 右侧精致微型滚动条 */
+    int bar_track_y = 57;
+    int bar_track_h = 5 * 44 - 3;
+    box(layer, 228, bar_track_y, 3, bar_track_h, lv_color_hex(0x22262e), lv_color_hex(0x22262e), 0, 0);
+    int thumb_h = bar_track_h * visible_items / total_items;
+    int thumb_y = bar_track_y + (bar_track_h - thumb_h) * sel / (total_items - 1);
+    box(layer, 227, thumb_y, 5, thumb_h, COL_ORANGE, COL_ORANGE, 0, 1);
 
     /* 底部操作提示 */
     text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:选择  OK:进入  长按:休眠", false, LV_TEXT_ALIGN_CENTER);
@@ -848,6 +875,307 @@ static void draw_game_dino(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
     text(layer, 8, 292, 224, COL_DIM, "UP/OK:跳跃  DOWN:俯冲  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
 }
 
+static void draw_game_life(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    const buddy_game_life_t *l = buddy_life_get_state();
+    char buf[128];
+    (void)s;
+
+    if (l->phase == LIFE_PHASE_TITLE) {
+        /* 标题开屏界面 */
+        text(layer, 8, 28, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
+        text(layer, 8, 46, 224, COL_DIM, "赛博人生重开模拟器", false, LV_TEXT_ALIGN_CENTER);
+        rule(layer, 20, 62, 200, COL_LINE);
+
+        /* 主介绍卡片 (Y: 72 ~ 190) */
+        box(layer, 14, 72, 212, 118, lv_color_hex(0x13161c), lv_color_hex(0x00d8a0), 2, 4);
+        text(layer, 14, 82, 212, lv_color_hex(0x00d8a0), "人生重开 · 逆天改命", true, LV_TEXT_ALIGN_CENTER);
+        rule(layer, 24, 102, 192, lv_color_hex(0x222834));
+
+        text(layer, 22, 110, 196, COL_INK, "这辈子不满意？那便重开！\n十选三逆天天赋，分配四维属性，\n探索凡人、修仙、赛博无限人生！", false, LV_TEXT_ALIGN_LEFT);
+
+        /* 历史最佳徽章 (Y: 200 ~ 276) */
+        box(layer, 14, 200, 212, 76, lv_color_hex(0x111317), COL_LINE, 1, 2);
+        box(layer, 14, 200, 4, 76, COL_YELLOW, COL_YELLOW, 0, 0);
+        text(layer, 24, 206, 192, COL_YELLOW, "【生涯最高记录】", true, LV_TEXT_ALIGN_LEFT);
+        snprintf(buf, sizeof(buf), "最高寿元: %u 岁", (unsigned)l->best_age);
+        text(layer, 24, 226, 192, COL_INK, buf, false, LV_TEXT_ALIGN_LEFT);
+        snprintf(buf, sizeof(buf), "生平评价: %s", c_life_titles[l->best_title_idx].name);
+        text(layer, 24, 246, 192, COL_DIM, buf, false, LV_TEXT_ALIGN_LEFT);
+
+        /* 底部操作 */
+        text(layer, 8, 292, 224, COL_ORANGE, "短按 [OK] 立即开启新人生", true, LV_TEXT_ALIGN_CENTER);
+        return;
+    }
+
+    if (l->phase == LIFE_PHASE_TALENT) {
+        /* 天赋抽选阶段 (10选3) */
+        snprintf(buf, sizeof(buf), "天赋抽选 (已选 %u/3)", (unsigned)l->talent_selected_count);
+        text(layer, 12, 28, 216, COL_ORANGE, buf, true, LV_TEXT_ALIGN_LEFT);
+        rule(layer, 12, 46, 216, COL_LINE);
+
+        /* 滚动列表 (同屏显示 4 个天赋) */
+        int sel = (int)l->talent_cursor;
+        int top = 0;
+        if (sel < 10) {
+            if (sel >= 4) top = sel - 4 + 1;
+            if (top > 6) top = 6;
+        } else {
+            top = 6; // 光标在[踏入轮回]时保持显示最后几项
+        }
+
+        for (int r = 0; r < 4; r++) {
+            int t_idx = top + r;
+            if (t_idx >= 10) break;
+            uint8_t tid = l->talent_pool[t_idx];
+            const life_talent_def_t *t = &c_life_talents[tid];
+            int y = 52 + r * 46;
+            bool is_cur = (sel == t_idx);
+            bool is_chk = l->talent_checked[t_idx];
+
+            lv_color_t q_col = COL_DIM;
+            const char *q_tag = "[普]";
+            if (t->quality == 3) { q_col = COL_ORANGE; q_tag = "[神]"; }
+            else if (t->quality == 2) { q_col = lv_color_hex(0xc87df5); q_tag = "[史]"; }
+            else if (t->quality == 1) { q_col = COL_BLUE; q_tag = "[稀]"; }
+
+            if (is_cur) {
+                box(layer, 10, y, 216, 42, lv_color_hex(0x181c24), is_chk ? COL_GREEN : COL_ORANGE, 2, 2);
+            } else {
+                box(layer, 10, y, 216, 42, lv_color_hex(0x101216), is_chk ? lv_color_hex(0x275a3a) : COL_LINE, 1, 2);
+            }
+
+            // 勾选复选框
+            if (is_chk) {
+                box(layer, 14, y + 6, 14, 14, COL_GREEN, COL_GREEN, 0, 1);
+                text(layer, 14, y + 6, 14, COL_BG, "V", true, LV_TEXT_ALIGN_CENTER);
+            } else {
+                box(layer, 14, y + 6, 14, 14, lv_color_hex(0x0a0c0e), COL_DIM, 1, 1);
+            }
+
+            // 品质与名称
+            snprintf(buf, sizeof(buf), "%s %s", q_tag, t->name);
+            text(layer, 32, y + 5, 188, q_col, buf, true, LV_TEXT_ALIGN_LEFT);
+            // 描述
+            text(layer, 32, y + 23, 188, COL_INK, t->desc, false, LV_TEXT_ALIGN_LEFT);
+        }
+
+        /* 底部踏入轮回确认条 (Y: 242) */
+        bool on_btn = (sel == 10);
+        lv_color_t btn_col = (l->talent_selected_count == 3) ? COL_GREEN : COL_DIM;
+        if (on_btn) {
+            box(layer, 12, 242, 216, 36, lv_color_hex(0x18241c), btn_col, 2, 2);
+            text(layer, 12, 250, 216, btn_col, ">>> 踏入轮回 · 前往加点 <<<", true, LV_TEXT_ALIGN_CENTER);
+        } else {
+            box(layer, 12, 242, 216, 36, lv_color_hex(0x101314), COL_LINE, 1, 2);
+            text(layer, 12, 250, 216, (l->talent_selected_count == 3) ? COL_INK : COL_DIM,
+                 (l->talent_selected_count == 3) ? "踏入轮回 · 前往加点" : "请先勾选满 3 个天赋", false, LV_TEXT_ALIGN_CENTER);
+        }
+
+        /* 底部按键提示 */
+        text(layer, 8, 292, 224, COL_DIM, "UP/DOWN:切换  OK:勾选  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
+        return;
+    }
+
+    if (l->phase == LIFE_PHASE_ALLOC) {
+        /* 属性分配阶段 (颜值, 智力, 体质, 家境) */
+        snprintf(buf, sizeof(buf), "属性分配 (剩余可用: %d 点)", (int)l->remain_pts);
+        text(layer, 12, 28, 216, (l->remain_pts == 0) ? COL_GREEN : COL_ORANGE, buf, true, LV_TEXT_ALIGN_LEFT);
+        rule(layer, 12, 46, 216, COL_LINE);
+
+        static const char *attr_names[4] = {"1. 颜值 (CHR)", "2. 智力 (INT)", "3. 体质 (STR)", "4. 家境 (MNY)"};
+        static const char *attr_tips[4] = {"影响社交恋爱与贵人相助", "影响高考求职与修仙感悟", "影响健康寿命与抵抗突发意外", "决定童年起点与创业资本"};
+        lv_color_t attr_colors[4] = {COL_YELLOW, COL_BLUE, COL_GREEN, COL_ORANGE};
+
+        for (int i = 0; i < 4; i++) {
+            int y = 54 + i * 46;
+            bool is_cur = (l->alloc_cursor == i);
+            int pts = l->alloc_pts[i];
+
+            if (is_cur) {
+                box(layer, 10, y, 216, 42, lv_color_hex(0x181c22), attr_colors[i], 2, 2);
+                box(layer, 10, y, 4, 42, attr_colors[i], attr_colors[i], 0, 0);
+            } else {
+                box(layer, 10, y, 216, 42, lv_color_hex(0x101215), COL_LINE, 1, 2);
+            }
+
+            // 属性名与数值
+            snprintf(buf, sizeof(buf), "%s: %d 点", attr_names[i], pts);
+            text(layer, 18, y + 4, 140, is_cur ? attr_colors[i] : COL_INK, buf, true, LV_TEXT_ALIGN_LEFT);
+
+            // 进度槽
+            box(layer, 148, y + 8, 70, 8, lv_color_hex(0x22262d), lv_color_hex(0x22262d), 0, 0);
+            if (pts > 0) {
+                int bar_w = pts * 7;
+                if (bar_w > 70) bar_w = 70;
+                box(layer, 148, y + 8, bar_w, 8, attr_colors[i], attr_colors[i], 0, 0);
+            }
+
+            // 提示文
+            text(layer, 18, y + 22, 196, COL_DIM, attr_tips[i], false, LV_TEXT_ALIGN_LEFT);
+        }
+
+        /* 确认开局按钮 */
+        bool on_btn = (l->alloc_cursor == 4);
+        if (on_btn) {
+            box(layer, 12, 244, 216, 36, lv_color_hex(0x18241c), COL_GREEN, 2, 2);
+            text(layer, 12, 252, 216, COL_GREEN, ">>> 【降生人世 · 开启人生】 <<<", true, LV_TEXT_ALIGN_CENTER);
+        } else {
+            box(layer, 12, 244, 216, 36, lv_color_hex(0x101314), COL_LINE, 1, 2);
+            text(layer, 12, 252, 216, COL_INK, "【降生人世 · 开启人生】", false, LV_TEXT_ALIGN_CENTER);
+        }
+
+        text(layer, 8, 292, 224, COL_DIM, "UP:+1点  DOWN:-1点  OK:下一项/确定", false, LV_TEXT_ALIGN_CENTER);
+        return;
+    }
+
+    if (l->phase == LIFE_PHASE_PLAY) {
+        /* 人生进行时主界面 (年谱流) */
+        // 顶部 HUD (Y: 26 ~ 50)
+        box(layer, 8, 26, 68, 22, lv_color_hex(0x19281f), COL_GREEN, 1, 2);
+        snprintf(buf, sizeof(buf), "%u 岁", (unsigned)l->age);
+        text(layer, 8, 28, 68, COL_GREEN, buf, true, LV_TEXT_ALIGN_CENTER);
+
+        // 特殊状态角标
+        if (l->is_cultivator) {
+            box(layer, 80, 26, 52, 22, lv_color_hex(0x281930), lv_color_hex(0xc87df5), 1, 2);
+            text(layer, 80, 28, 52, lv_color_hex(0xc87df5), "修仙中", true, LV_TEXT_ALIGN_CENTER);
+        } else if (l->is_cyber) {
+            box(layer, 80, 26, 52, 22, lv_color_hex(0x10252b), lv_color_hex(0x00d8a0), 1, 2);
+            text(layer, 80, 28, 52, lv_color_hex(0x00d8a0), "赛博流", true, LV_TEXT_ALIGN_CENTER);
+        }
+
+        // 紧凑属性行 (Y: 30)
+        snprintf(buf, sizeof(buf), "颜%d 智%d 体%d 财%d 乐%d",
+                 (int)l->chr, (int)l->int_val, (int)l->str, (int)l->mny, (int)l->joy);
+        text(layer, 134, 30, 102, COL_DIM, buf, false, LV_TEXT_ALIGN_RIGHT);
+        rule(layer, 8, 52, 224, COL_LINE);
+
+        /* 中间日志流区域 (Y: 56 ~ 276, 最多渲染当前可见的 3~4 条事件) */
+        int total_logs = l->log_count;
+        if (total_logs > 0) {
+            int view_count = 3;
+            int end_idx = total_logs - 1 - l->scroll_ofs;
+            if (end_idx < 0) end_idx = 0;
+            int start_idx = end_idx - view_count + 1;
+            if (start_idx < 0) start_idx = 0;
+
+            int cur_y = 56;
+            for (int idx = start_idx; idx <= end_idx; idx++) {
+                const buddy_life_log_item_t *item = &l->logs[idx];
+                bool is_latest = (idx == total_logs - 1);
+
+                int card_h = 68;
+                if (is_latest) {
+                    box(layer, 8, cur_y, 224, card_h, lv_color_hex(0x161a22), COL_ORANGE, 2, 2);
+                    box(layer, 8, cur_y, 4, card_h, COL_ORANGE, COL_ORANGE, 0, 0);
+                } else {
+                    box(layer, 8, cur_y, 224, card_h, lv_color_hex(0x0f1114), COL_LINE, 1, 2);
+                    box(layer, 8, cur_y, 3, card_h, COL_DIM, COL_DIM, 0, 0);
+                }
+
+                // 年份与属性变更标签
+                snprintf(buf, sizeof(buf), "【%u 岁】", (unsigned)item->age);
+                text(layer, 16, cur_y + 4, 70, is_latest ? COL_ORANGE : COL_YELLOW, buf, true, LV_TEXT_ALIGN_LEFT);
+
+                // 属性变化小标签
+                char d_buf[64] = "";
+                if (item->d_int > 0) snprintf(d_buf + strlen(d_buf), sizeof(d_buf) - strlen(d_buf), "智+%d ", item->d_int);
+                if (item->d_str > 0) snprintf(d_buf + strlen(d_buf), sizeof(d_buf) - strlen(d_buf), "体+%d ", item->d_str);
+                if (item->d_str < 0) snprintf(d_buf + strlen(d_buf), sizeof(d_buf) - strlen(d_buf), "体%d ", item->d_str);
+                if (item->d_mny > 0) snprintf(d_buf + strlen(d_buf), sizeof(d_buf) - strlen(d_buf), "财+%d ", item->d_mny);
+                if (item->d_joy > 0) snprintf(d_buf + strlen(d_buf), sizeof(d_buf) - strlen(d_buf), "乐+%d ", item->d_joy);
+                if (item->d_joy < 0) snprintf(d_buf + strlen(d_buf), sizeof(d_buf) - strlen(d_buf), "乐%d ", item->d_joy);
+                if (d_buf[0] != '\0') {
+                    text(layer, 86, cur_y + 4, 140, is_latest ? COL_GREEN : COL_DIM, d_buf, false, LV_TEXT_ALIGN_RIGHT);
+                }
+
+                // 事件详情文本
+                text_limited(layer, 16, cur_y + 24, 208, is_latest ? COL_INK : COL_DIM, item->text, false, LV_TEXT_ALIGN_LEFT, 2);
+
+                cur_y += card_h + 6;
+            }
+        }
+
+        /* 底部操作指引 */
+        text(layer, 8, 292, 224, COL_ORANGE, "OK:下一年  双击:连进3年  UP/DOWN:翻看", false, LV_TEXT_ALIGN_CENTER);
+        return;
+    }
+
+    if (l->phase == LIFE_PHASE_CHOICE) {
+        /* 重大人生抉择弹窗 */
+        const life_choice_def_t *c = &c_life_choices[l->cur_choice_idx];
+
+        // 弹窗背景
+        box(layer, 10, 48, 220, 234, lv_color_hex(0x14171d), COL_ORANGE, 2, 4);
+        snprintf(buf, sizeof(buf), "人生重大抉择 (%u岁)", (unsigned)c->age);
+        text(layer, 10, 56, 220, COL_ORANGE, buf, true, LV_TEXT_ALIGN_CENTER);
+        rule(layer, 20, 76, 200, lv_color_hex(0x282d38));
+
+        text(layer, 18, 86, 204, COL_INK, c->title, true, LV_TEXT_ALIGN_CENTER);
+
+        // 选项 A
+        bool sel_a = (l->choice_sel == 0);
+        if (sel_a) {
+            box(layer, 18, 120, 204, 52, lv_color_hex(0x1e2430), COL_GREEN, 2, 2);
+            text(layer, 22, 126, 196, COL_GREEN, "A. 选项 [当前选中]", true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 22, 144, 196, COL_INK, c->opt_a, false, LV_TEXT_ALIGN_LEFT);
+        } else {
+            box(layer, 18, 120, 204, 52, lv_color_hex(0x101318), COL_LINE, 1, 2);
+            text(layer, 22, 126, 196, COL_DIM, "A. 选项", false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 22, 144, 196, COL_DIM, c->opt_a, false, LV_TEXT_ALIGN_LEFT);
+        }
+
+        // 选项 B
+        bool sel_b = (l->choice_sel == 1);
+        if (sel_b) {
+            box(layer, 18, 182, 204, 52, lv_color_hex(0x1e2430), COL_GREEN, 2, 2);
+            text(layer, 22, 188, 196, COL_GREEN, "B. 选项 [当前选中]", true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 22, 206, 196, COL_INK, c->opt_b, false, LV_TEXT_ALIGN_LEFT);
+        } else {
+            box(layer, 18, 182, 204, 52, lv_color_hex(0x101318), COL_LINE, 1, 2);
+            text(layer, 22, 188, 196, COL_DIM, "B. 选项", false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 22, 206, 196, COL_DIM, c->opt_b, false, LV_TEXT_ALIGN_LEFT);
+        }
+
+        text(layer, 10, 252, 220, COL_YELLOW, "UP/DOWN:切换选项  OK:确定命运", false, LV_TEXT_ALIGN_CENTER);
+        return;
+    }
+
+    if (l->phase == LIFE_PHASE_OVER) {
+        /* 结算与赛博墓碑界面 */
+        box(layer, 10, 28, 220, 254, lv_color_hex(0x13151a), COL_RED, 2, 4);
+        text(layer, 10, 36, 220, COL_RED, "=== 人生终局 · 盖棺定论 ===", true, LV_TEXT_ALIGN_CENTER);
+        rule(layer, 20, 56, 200, lv_color_hex(0x323844));
+
+        snprintf(buf, sizeof(buf), "享年: %u 岁", (unsigned)l->age);
+        text(layer, 20, 64, 200, COL_INK, buf, true, LV_TEXT_ALIGN_LEFT);
+
+        const life_title_def_t *title = &c_life_titles[l->current_title_idx];
+        snprintf(buf, sizeof(buf), "生平称号: 【%s】", title->name);
+        text(layer, 20, 84, 200, COL_YELLOW, buf, true, LV_TEXT_ALIGN_LEFT);
+
+        snprintf(buf, sizeof(buf), "综合评分: %u 分", (unsigned)l->total_score);
+        text(layer, 20, 104, 200, COL_GREEN, buf, true, LV_TEXT_ALIGN_LEFT);
+
+        rule(layer, 20, 126, 200, lv_color_hex(0x252a33));
+
+        // 最终死因与评价
+        text(layer, 20, 134, 200, COL_DIM, "离世缘由:", false, LV_TEXT_ALIGN_LEFT);
+        text_limited(layer, 20, 152, 200, COL_INK, l->death_cause, false, LV_TEXT_ALIGN_LEFT, 2);
+
+        text(layer, 20, 192, 200, COL_DIM, "人生墓志铭:", false, LV_TEXT_ALIGN_LEFT);
+        text_limited(layer, 20, 210, 200, COL_ORANGE, title->eval, false, LV_TEXT_ALIGN_LEFT, 2);
+
+        // 底部重开按钮
+        box(layer, 20, 240, 200, 32, lv_color_hex(0x1d271f), COL_GREEN, 1, 2);
+        text(layer, 20, 248, 200, COL_GREEN, ">>> 短按 [OK] 再次重开 <<<", true, LV_TEXT_ALIGN_CENTER);
+
+        text(layer, 8, 292, 224, COL_DIM, "OK:重新投胎  长按OK:返回系统菜单", false, LV_TEXT_ALIGN_CENTER);
+        return;
+    }
+}
+
 static void draw_home(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 {
     char quota_buf[48];
@@ -1181,6 +1509,7 @@ static void redraw(void)
     case BUDDY_PAGE_PROFILE: draw_profile(layer, &s_snapshot); break;
     case BUDDY_PAGE_GAME_SNAKE: draw_game_snake(layer, &s_snapshot); break;
     case BUDDY_PAGE_GAME_DINO: draw_game_dino(layer, &s_snapshot); break;
+    case BUDDY_PAGE_GAME_LIFE: draw_game_life(layer, &s_snapshot); break;
     case BUDDY_PAGE_VOKIE: draw_vokie(layer, &s_snapshot); break;
     case BUDDY_PAGE_LIMITS: draw_limits(layer, &s_snapshot); break;
     case BUDDY_PAGE_TOOLS: draw_tools_breakdown(layer, &s_snapshot); break;

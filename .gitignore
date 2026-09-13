@@ -48,3 +48,11 @@ logs/
 firmware/build/
 *.bin
 .ccache/
+firmware/sdkconfig
+firmware/dependencies.lock
+firmware/managed_components/
+firmware_backup_*/
+*.apk
+*.png
+available_chars.txt
+total_symbols.txt

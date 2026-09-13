@@ -1,5 +1,6 @@
 #include "buddy_state.h"
 #include "buddy_games.h"
+#include "buddy_game_life.h"
 #include "buddy_vokie.h"
 #include "buddy_ble.h"
 
@@ -328,6 +329,10 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
                 state->page = BUDDY_PAGE_VOKIE;
                 buddy_ble_set_vokie_adv_mode(true);
                 break;
+            case BUDDY_LAUNCHER_ITEM_GAME_LIFE:
+                buddy_life_reset();
+                state->page = BUDDY_PAGE_GAME_LIFE;
+                break;
             case BUDDY_LAUNCHER_ITEM_GAME_SNAKE:
                 buddy_snake_reset();
                 state->page = BUDDY_PAGE_GAME_SNAKE;
@@ -370,6 +375,11 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
     }
 
     /* 小游戏按键分发 */
+    if (state->page == BUDDY_PAGE_GAME_LIFE) {
+        buddy_life_key(key);
+        buddy_set_ui_refresh(action);
+        return;
+    }
     if (state->page == BUDDY_PAGE_GAME_SNAKE) {
         buddy_snake_key(key);
         buddy_set_ui_refresh(action);
@@ -805,6 +815,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         } else if (state->page == BUDDY_PAGE_VOKIE) {
             buddy_vokie_key_ok_double();
             buddy_set_ui_refresh(action);
+        } else if (state->page == BUDDY_PAGE_GAME_LIFE) {
+            buddy_life_double_key();
+            buddy_set_ui_refresh(action);
         }
         break;
     case BUDDY_EVENT_TICK:
@@ -816,6 +829,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
             buddy_dino_tick();
             state->last_user_activity_ms = now_ms;
             buddy_set_ui_refresh(action);
+        } else if (state->page == BUDDY_PAGE_GAME_LIFE) {
+            buddy_life_tick();
+            state->last_user_activity_ms = now_ms;
         } else if (state->page == BUDDY_PAGE_VOKIE) {
             const buddy_vokie_state_t *vs = buddy_vokie_get_state();
             if (vs->recording || vs->status == BUDDY_VOKIE_STATE_THINKING) {
