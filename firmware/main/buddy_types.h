@@ -89,6 +89,13 @@ typedef enum {
 } buddy_confirmation_t;
 
 typedef enum {
+    BUDDY_THEME_WARM_LIGHT = 0, /* 晨曦暖白主题 (默认主配色：暖白+暖黄) */
+    BUDDY_THEME_WARM_DARK = 1,  /* 黑曜极简主题 (通透深黑+暖黄) */
+    BUDDY_THEME_COUNT,
+} buddy_theme_t;
+
+typedef enum {
+    BUDDY_SETTINGS_THEME,       /* 界面主题风格 (暖白晨曦 / 黑曜极简) */
     BUDDY_SETTINGS_BRIGHTNESS,
     BUDDY_SETTINGS_SOUND,
     BUDDY_SETTINGS_BLE,
@@ -250,6 +257,7 @@ typedef struct {
     uint64_t denial_count;
     uint64_t highest_celebrated_level;
     bool ble_enabled;
+    uint8_t ui_theme;
 } buddy_settings_snapshot_t;
 
 typedef struct {
@@ -352,4 +360,5 @@ typedef struct {
     uint32_t passkey;
     uint8_t battery_percent;
     uint16_t battery_mv;
+    uint8_t ui_theme;
 } buddy_ui_snapshot_t;

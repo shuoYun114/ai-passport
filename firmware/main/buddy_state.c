@@ -231,6 +231,11 @@ static void buddy_settings_click(buddy_state_t *state, buddy_key_t key,
     }
 
     switch (state->settings_selection) {
+    case BUDDY_SETTINGS_THEME:
+        state->ui_theme = (uint8_t)((state->ui_theme + 1U) % BUDDY_THEME_COUNT);
+        state->settings.ui_theme = state->ui_theme;
+        buddy_set_ui_refresh(action);
+        break;
     case BUDDY_SETTINGS_BRIGHTNESS:
         state->brightness_level = (uint8_t)((state->brightness_level + 1U) % 5U);
         if (action != NULL) {
@@ -343,7 +348,7 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
                 break;
             case BUDDY_LAUNCHER_ITEM_SETTINGS:
                 state->page = BUDDY_PAGE_SETTINGS;
-                state->settings_selection = BUDDY_SETTINGS_BRIGHTNESS;
+                state->settings_selection = BUDDY_SETTINGS_THEME;
                 break;
             default:
                 break;
@@ -598,6 +603,7 @@ void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *set
     state->page = BUDDY_PAGE_LAUNCHER;
     state->launcher_selection = BUDDY_LAUNCHER_ITEM_AI_MONITOR;
     state->heartbeat_stale = true;
+    state->ui_theme = BUDDY_THEME_WARM_LIGHT; /* 默认使用暖白与暖黄高质感极简主题 */
     state->brightness_level = 2; /* 默认 60% 舒适亮度，比 100% 节省约 40% 功耗 */
     state->last_user_activity_ms = 0;
     state->dimmed = false;
@@ -607,6 +613,9 @@ void buddy_state_init(buddy_state_t *state, const buddy_settings_snapshot_t *set
         state->highest_celebrated_level = settings->highest_celebrated_level;
         buddy_copy(state->name, sizeof(state->name), settings->name);
         buddy_copy(state->owner, sizeof(state->owner), settings->owner);
+        if (settings->ui_theme < BUDDY_THEME_COUNT) {
+            state->ui_theme = settings->ui_theme;
+        }
     }
     buddy_refresh_character(state, 0);
 }
@@ -920,6 +929,7 @@ void buddy_state_snapshot(const buddy_state_t *state, buddy_ui_snapshot_t *snaps
     snapshot->passkey = state->passkey;
     snapshot->battery_percent = state->battery_percent;
     snapshot->battery_mv = state->battery_mv;
+    snapshot->ui_theme = state->ui_theme;
     buddy_copy(snapshot->name, sizeof(snapshot->name), state->name);
     buddy_copy(snapshot->owner, sizeof(snapshot->owner), state->owner);
     buddy_copy(snapshot->time, sizeof(snapshot->time), state->time);

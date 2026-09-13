@@ -966,6 +966,8 @@ static QueueHandle_t buddy_wait_for_queue(bool low_power)
     return ready;
 }
 
+static buddy_state_t *s_app_state = NULL;
+
 static void buddy_app_task(void *context)
 {
     static buddy_state_t state;
@@ -978,6 +980,7 @@ static void buddy_app_task(void *context)
     (void)ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
     buddy_state_init(&state, &s_initial_settings);
     buddy_sample_battery(&state);
+    s_app_state = &state;
 
     for (;;) {
         QueueHandle_t ready = buddy_wait_for_queue(state.screen_off);
@@ -1004,6 +1007,7 @@ static void buddy_app_task(void *context)
                 buddy_rx_slot_release(slot);
             }
         }
+
         if (!reduced) {
             const buddy_event_t tick = {.type = BUDDY_EVENT_TICK};
 
@@ -1049,10 +1053,66 @@ static void buddy_screenshot_task(void *context)
             vTaskDelay(pdMS_TO_TICKS(50));
             continue;
         }
-        length = strcspn(request, "\r\n");
-        request[length] = '\0';
-        if (strcmp(request, "FAP_SCREENSHOT_V1") != 0) {
+        char *cmd = request;
+        while (*cmd == ' ' || *cmd == '\t' || *cmd == '\r' || *cmd == '\n') cmd++;
+        length = strlen(cmd);
+        while (length > 0 && (cmd[length - 1] == ' ' || cmd[length - 1] == '\t' || cmd[length - 1] == '\r' || cmd[length - 1] == '\n')) {
+            cmd[--length] = '\0';
+        }
+        if (length == 0) {
             continue;
+        }
+        if (s_app_state != NULL) {
+            s_app_state->screen_off = false;
+            s_app_state->dimmed = false;
+            s_app_state->last_user_activity_ms = buddy_now_ms();
+            bsp_display_backlight((uint8_t)(20U + s_app_state->brightness_level * 20U));
+        }
+
+        if (strcmp(cmd, "FAP_THEME_TOGGLE") == 0) {
+            if (s_app_state != NULL) {
+                s_app_state->ui_theme = (uint8_t)((s_app_state->ui_theme + 1U) % BUDDY_THEME_COUNT);
+                s_app_state->settings.ui_theme = s_app_state->ui_theme;
+                buddy_notify_app();
+                printf("OK_THEME %u\n", (unsigned)s_app_state->ui_theme);
+                fflush(stdout);
+            }
+            continue;
+        } else if (strncmp(cmd, "FAP_PAGE ", 9) == 0) {
+            if (s_app_state != NULL) {
+                s_app_state->page = (buddy_page_t)atoi(cmd + 9);
+                buddy_notify_app();
+                printf("OK_PAGE %u\n", (unsigned)s_app_state->page);
+                fflush(stdout);
+            }
+            continue;
+        } else if (strcmp(cmd, "FAP_KEY_UP") == 0) {
+            on_key(BSP_BTN_UP, BSP_BTN_CLICK, NULL);
+            printf("OK_KEY UP\n");
+            fflush(stdout);
+            continue;
+        } else if (strcmp(cmd, "FAP_KEY_DOWN") == 0) {
+            on_key(BSP_BTN_DOWN, BSP_BTN_CLICK, NULL);
+            printf("OK_KEY DOWN\n");
+            fflush(stdout);
+            continue;
+        } else if (strcmp(cmd, "FAP_KEY_OK") == 0) {
+            on_key(BSP_BTN_OK, BSP_BTN_CLICK, NULL);
+            printf("OK_KEY OK\n");
+            fflush(stdout);
+            continue;
+        } else if (strcmp(cmd, "FAP_KEY_OK_LONG") == 0) {
+            on_key(BSP_BTN_OK, BSP_BTN_LONG, NULL);
+            printf("OK_KEY OK_LONG\n");
+            fflush(stdout);
+            continue;
+        } else if (strcmp(cmd, "FAP_SCREENSHOT_V1") != 0) {
+            continue;
+        }
+
+        if (s_app_state != NULL) {
+            buddy_action_t act = {0};
+            buddy_render(s_app_state, &act, buddy_now_ms());
         }
 
         esp_log_level_t previous_level = esp_log_level_get("*");
