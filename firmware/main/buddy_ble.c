@@ -30,6 +30,7 @@
 #include "buddy_line.h"
 #include "buddy_ble_store.h"
 #include "buddy_ble_lifecycle.h"
+#include "buddy_vokie.h"
 #endif
 
 size_t buddy_ble_tx_fragment_size(uint16_t mtu)
@@ -179,6 +180,7 @@ static struct ble_npl_callout s_adv_retry_callout;
 static const ble_uuid128_t s_nus_service_uuid = BLE_UUID128_INIT(BUDDY_NUS_SERVICE_UUID_BYTES);
 static const ble_uuid128_t s_nus_rx_uuid = BLE_UUID128_INIT(BUDDY_NUS_RX_UUID_BYTES);
 static const ble_uuid128_t s_nus_tx_uuid = BLE_UUID128_INIT(BUDDY_NUS_TX_UUID_BYTES);
+static bool s_vokie_adv_mode = false;
 
 static int buddy_gap_event(struct ble_gap_event *event, void *context);
 static int buddy_gatt_access(uint16_t conn_handle, uint16_t attr_handle,
@@ -302,6 +304,34 @@ static const struct ble_gatt_svc_def s_gatt_services[] = {
                 .access_cb = buddy_gatt_access,
                 .flags = BLE_GATT_CHR_F_READ | BLE_GATT_CHR_F_NOTIFY,
                 .val_handle = &s_tx_value_handle,
+            },
+            {0},
+        },
+    },
+    {
+        .type = BLE_GATT_SVC_TYPE_PRIMARY,
+        .uuid = &g_vokie_service_uuid.u,
+        .characteristics = (struct ble_gatt_chr_def[]) {
+            {
+                .uuid = &g_vokie_control_uuid.u,
+                .access_cb = buddy_vokie_gatt_access,
+                .arg = (void *)(intptr_t)1,
+                .flags = BLE_GATT_CHR_F_WRITE | BLE_GATT_CHR_F_NOTIFY,
+                .val_handle = &g_vokie_control_handle,
+            },
+            {
+                .uuid = &g_vokie_audio_uuid.u,
+                .access_cb = buddy_vokie_gatt_access,
+                .arg = (void *)(intptr_t)2,
+                .flags = BLE_GATT_CHR_F_NOTIFY,
+                .val_handle = &g_vokie_audio_handle,
+            },
+            {
+                .uuid = &g_vokie_info_uuid.u,
+                .access_cb = buddy_vokie_gatt_access,
+                .arg = (void *)(intptr_t)3,
+                .flags = BLE_GATT_CHR_F_READ,
+                .val_handle = &g_vokie_info_handle,
             },
             {0},
         },
@@ -511,7 +541,11 @@ static int buddy_reconcile_advertising(void)
 
     memset(&fields, 0, sizeof(fields));
     fields.flags = BLE_HS_ADV_F_DISC_GEN | BLE_HS_ADV_F_BREDR_UNSUP;
-    fields.uuids128 = (ble_uuid128_t *)&s_nus_service_uuid;
+    if (s_vokie_adv_mode) {
+        fields.uuids128 = (ble_uuid128_t *)&g_vokie_service_uuid;
+    } else {
+        fields.uuids128 = (ble_uuid128_t *)&s_nus_service_uuid;
+    }
     fields.num_uuids128 = 1;
     fields.uuids128_is_complete = 1;
     rc = ble_gap_adv_set_fields(&fields);
@@ -521,8 +555,9 @@ static int buddy_reconcile_advertising(void)
     }
 
     memset(&response_fields, 0, sizeof(response_fields));
-    response_fields.name = (uint8_t *)s_device_name;
-    response_fields.name_len = strlen(s_device_name);
+    const char *adv_name = s_vokie_adv_mode ? "Vokie Passport" : s_device_name;
+    response_fields.name = (uint8_t *)adv_name;
+    response_fields.name_len = strlen(adv_name);
     response_fields.name_is_complete = 1;
     rc = ble_gap_adv_rsp_set_fields(&response_fields);
     if (rc != 0) {
@@ -996,6 +1031,7 @@ static void buddy_on_disconnect(uint16_t conn_handle, int reason)
     if (emit_disconnect) {
         buddy_emit(&event);
     }
+    buddy_vokie_on_disconnect();
     if (delete_bonds) {
         buddy_finish_bond_deletion(NULL);
     } else if (advertise) {
@@ -1053,6 +1089,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
             };
             buddy_emit(&connected_event);
         }
+        buddy_vokie_on_connect(event->connect.conn_handle);
         {
             const buddy_ble_event_t encryption_event = {
                 .type = BUDDY_BLE_EVENT_ENCRYPTION,
@@ -1131,6 +1168,7 @@ static int buddy_gap_event(struct ble_gap_event *event, void *context)
                                                 : 0;
         }
         xSemaphoreGive(s_ble.mutex);
+        buddy_vokie_on_subscribe(event->subscribe.attr_handle, event->subscribe.cur_notify);
         return 0;
 
     case BLE_GAP_EVENT_PASSKEY_ACTION: {
@@ -1338,6 +1376,9 @@ static int buddy_runtime_gatt_init(void *context)
     }
     if (rc == 0) {
         rc = ble_svc_gap_device_name_set(s_device_name);
+    }
+    if (rc == 0) {
+        buddy_vokie_init();
     }
     return rc;
 }
@@ -1698,6 +1739,22 @@ esp_err_t buddy_ble_delete_bonds(void)
 
     buddy_schedule_bond_work();
     return ESP_OK;
+}
+
+void buddy_ble_set_vokie_adv_mode(bool vokie_mode)
+{
+    xSemaphoreTake(s_ble.mutex, portMAX_DELAY);
+    if (s_vokie_adv_mode != vokie_mode) {
+        s_vokie_adv_mode = vokie_mode;
+        ++s_ble.advertising_epoch;
+        if (ble_gap_adv_active()) {
+            ble_gap_adv_stop();
+        }
+        xSemaphoreGive(s_ble.mutex);
+        buddy_schedule_adv_work();
+        return;
+    }
+    xSemaphoreGive(s_ble.mutex);
 }
 
 #endif

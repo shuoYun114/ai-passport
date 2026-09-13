@@ -111,3 +111,4 @@ bool buddy_ble_is_encrypted(void);
  * exhaustion. Advertising remains suppressed after failure and until a later
  * explicit request verifies that every stored bond has been deleted. */
 esp_err_t buddy_ble_delete_bonds(void);
+void buddy_ble_set_vokie_adv_mode(bool vokie_mode);

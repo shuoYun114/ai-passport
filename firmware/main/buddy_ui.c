@@ -9,6 +9,7 @@
 #include "buddy_sprite.h"
 #include "buddy_text_layout.h"
 #include "buddy_games.h"
+#include "buddy_vokie.h"
 #include "qrcode.h"
 #include "lvgl.h"
 
@@ -411,12 +412,12 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
 
     /* 顶部大标题与系统副标 */
     text(layer, 8, 26, 224, COL_ORANGE, "AI PASSPORT", true, LV_TEXT_ALIGN_CENTER);
-    text(layer, 8, 44, 224, COL_DIM, "系统主菜单", false, LV_TEXT_ALIGN_CENTER);
-    rule(layer, 16, 58, 208, COL_LINE);
+    text(layer, 8, 42, 224, COL_DIM, "系统主菜单", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 16, 54, 208, COL_LINE);
 
-    /* 5 个主功能卡片 */
+    /* 6 个主功能卡片 (自适应紧凑排版) */
     for (i = 0; i < BUDDY_LAUNCHER_ITEM_COUNT; ++i) {
-        int y = 64 + i * 46;
+        int y = 57 + i * 39;
         bool selected = (i == (int)s->launcher_selection);
         lv_color_t accent = COL_ORANGE;
         const char *title = "";
@@ -433,37 +434,139 @@ static void draw_launcher(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
             accent = COL_YELLOW;
             title = "2. 个人智能主页";
             subtitle = "电子工牌 · 伴侣名片";
+        } else if (i == BUDDY_LAUNCHER_ITEM_VOKIE) {
+            accent = COL_BLUE;
+            title = "3. Vokie 语音助手";
+            subtitle = "实时语音 · 极速转写提交";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_SNAKE) {
             accent = COL_GREEN;
-            title = "3. 经典贪吃蛇";
+            title = "4. 经典贪吃蛇";
             subtitle = "转向避障 · 挑战最高分";
         } else if (i == BUDDY_LAUNCHER_ITEM_GAME_DINO) {
             accent = COL_YELLOW;
-            title = "4. 跳跳恐龙跑酷";
+            title = "5. 跳跳恐龙跑酷";
             subtitle = "越过仙人掌 · 刷新纪录";
         } else if (i == BUDDY_LAUNCHER_ITEM_SETTINGS) {
             accent = COL_BLUE;
-            title = "5. 系统设置";
+            title = "6. 系统设置";
             subtitle = "屏幕亮度 · 蓝牙控制";
         }
 
         /* 绘制卡片底框与边框 */
         if (selected) {
-            box(layer, 8, y, 224, 42, lv_color_hex(0x181c22), accent, 2, 0);
-            box(layer, 8, y, 4, 42, accent, accent, 0, 0);
-            text(layer, 18, y + 4, 185, accent, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 23, 185, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
-            text(layer, 208, y + 11, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
+            box(layer, 8, y, 224, 37, lv_color_hex(0x181c22), accent, 2, 0);
+            box(layer, 8, y, 4, 37, accent, accent, 0, 0);
+            text(layer, 18, y + 3, 185, accent, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 20, 185, COL_INK, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            text(layer, 208, y + 9, 18, accent, ">", true, LV_TEXT_ALIGN_CENTER);
         } else {
-            box(layer, 8, y, 224, 42, lv_color_hex(0x101215), COL_LINE, 1, 0);
-            box(layer, 8, y, 3, 42, COL_DIM, COL_DIM, 0, 0);
-            text(layer, 18, y + 4, 185, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
-            text(layer, 18, y + 23, 185, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
+            box(layer, 8, y, 224, 37, lv_color_hex(0x101215), COL_LINE, 1, 0);
+            box(layer, 8, y, 3, 37, COL_DIM, COL_DIM, 0, 0);
+            text(layer, 18, y + 3, 185, COL_INK, title, true, LV_TEXT_ALIGN_LEFT);
+            text(layer, 18, y + 20, 185, COL_DIM, subtitle, false, LV_TEXT_ALIGN_LEFT);
         }
     }
 
     /* 底部操作提示 */
     text(layer, 8, 296, 224, COL_DIM, "UP/DOWN:选择  OK:进入  长按:休眠", false, LV_TEXT_ALIGN_CENTER);
+}
+
+static void draw_vokie(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
+{
+    const buddy_vokie_state_t *v = buddy_vokie_get_state();
+    char buf[64];
+    (void)s;
+
+    /* 1. 顶部标题栏 (Y: 26 ~ 50) */
+    text(layer, 12, 28, 150, COL_BLUE, "VOKIE AI VOICE", true, LV_TEXT_ALIGN_LEFT);
+    lv_color_t dot_color = v->connected ? (v->recording ? COL_ORANGE : COL_GREEN) : COL_DIM;
+    box(layer, 168, 29, 60, 15, lv_color_hex(0x151b22), dot_color, 1, 0);
+    text(layer, 168, 30, 60, dot_color, v->connected ? "已连接" : "离线待命", false, LV_TEXT_ALIGN_CENTER);
+    rule(layer, 12, 48, 216, COL_LINE);
+
+    /* 2. 中央科技麦克风与动态声波徽标 (X: 76, Y: 58, W: 88, H: 76) */
+    box(layer, 76, 58, 88, 76, lv_color_hex(0x101317), v->recording ? COL_ORANGE : COL_BLUE, 1, 4);
+    int bar_heights[5] = {16, 28, 44, 28, 16};
+    if (v->recording) {
+        uint32_t t = (v->active_tick / 150) % 4;
+        bar_heights[0] = 12 + ((t * 7) % 18);
+        bar_heights[1] = 20 + (((t + 1) * 9) % 24);
+        bar_heights[2] = 36 + (((t + 2) * 11) % 20);
+        bar_heights[3] = 22 + (((t + 3) * 8) % 22);
+        bar_heights[4] = 14 + ((t * 6) % 16);
+    }
+    lv_color_t wave_col = v->recording ? COL_ORANGE : (v->connected ? COL_BLUE : COL_DIM);
+    for (int b = 0; b < 5; ++b) {
+        int bx = 90 + b * 12;
+        int bh = bar_heights[b];
+        int by = 96 - bh / 2;
+        box(layer, bx, by, 6, bh, wave_col, wave_col, 0, 1);
+    }
+
+    /* 3. 核心状态文字 (Y: 142) */
+    const char *state_str = "OFFLINE";
+    lv_color_t state_col = COL_DIM;
+    switch (v->status) {
+    case BUDDY_VOKIE_STATE_LISTENING:
+        state_str = "LISTENING...";
+        state_col = COL_ORANGE;
+        break;
+    case BUDDY_VOKIE_STATE_THINKING:
+        state_str = "THINKING...";
+        state_col = COL_YELLOW;
+        break;
+    case BUDDY_VOKIE_STATE_SENT:
+        state_str = "SENT SUCCESS";
+        state_col = COL_GREEN;
+        break;
+    case BUDDY_VOKIE_STATE_ERROR:
+        state_str = "ERROR";
+        state_col = COL_RED;
+        break;
+    case BUDDY_VOKIE_STATE_READY:
+        state_str = "READY";
+        state_col = COL_GREEN;
+        break;
+    default:
+        state_str = v->connected ? "READY" : "WAITING FOR HOST";
+        state_col = v->connected ? COL_BLUE : COL_DIM;
+        break;
+    }
+    text(layer, 12, 142, 175, state_col, state_str, true, LV_TEXT_ALIGN_CENTER);
+
+    /* 4. 实时信息卡片 (Y: 172 ~ 276, H: 104) */
+    box(layer, 12, 172, 175, 104, lv_color_hex(0x12151a), COL_LINE, 1, 2);
+    box(layer, 12, 172, 3, 104, state_col, state_col, 0, 0);
+
+    text(layer, 20, 178, 160, COL_DIM, "当前活动状态", false, LV_TEXT_ALIGN_LEFT);
+    rule(layer, 20, 196, 155, lv_color_hex(0x22262e));
+
+    snprintf(buf, sizeof(buf), "%s", v->message[0] ? v->message : "Vokie 待命中");
+    text(layer, 20, 204, 160, COL_INK, buf, true, LV_TEXT_ALIGN_LEFT);
+
+    text(layer, 20, 226, 160, COL_DIM, "采样: 16kHz 16-bit", false, LV_TEXT_ALIGN_LEFT);
+    text(layer, 20, 244, 160, COL_DIM, "压缩: IMA ADPCM 20ms", false, LV_TEXT_ALIGN_LEFT);
+
+    /* 5. 右侧悬浮按键提示轨 (Button Hints Rail, X: 194, W: 36) */
+    const int rail_x = 194;
+    const int rail_w = 36;
+    box(layer, rail_x, 58, rail_w, 66, lv_color_hex(0x15181e), COL_ORANGE, 1, 2);
+    text(layer, rail_x, 66, rail_w, COL_ORANGE, "UP", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 86, rail_w, COL_INK, v->recording ? "停止" : "录音", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 104, rail_w, COL_DIM, "切换", false, LV_TEXT_ALIGN_CENTER);
+
+    box(layer, rail_x, 134, rail_w, 66, lv_color_hex(0x15181e), COL_BLUE, 1, 2);
+    text(layer, rail_x, 142, rail_w, COL_BLUE, "DOWN", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 162, rail_w, COL_INK, "进入", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 180, rail_w, COL_DIM, "回车", false, LV_TEXT_ALIGN_CENTER);
+
+    box(layer, rail_x, 210, rail_w, 66, lv_color_hex(0x15181e), COL_GREEN, 1, 2);
+    text(layer, rail_x, 218, rail_w, COL_GREEN, "OK", true, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 238, rail_w, COL_INK, "点按", false, LV_TEXT_ALIGN_CENTER);
+    text(layer, rail_x, 256, rail_w, COL_DIM, "退/清", false, LV_TEXT_ALIGN_CENTER);
+
+    /* 6. 底部系统提示 */
+    text(layer, 8, 296, 224, COL_DIM, "点OK:删/取消  双击:清空  长按:菜单", false, LV_TEXT_ALIGN_CENTER);
 }
 
 static void draw_profile_qr_overlay(lv_layer_t *layer, const buddy_ui_snapshot_t *s)
@@ -1078,6 +1181,7 @@ static void redraw(void)
     case BUDDY_PAGE_PROFILE: draw_profile(layer, &s_snapshot); break;
     case BUDDY_PAGE_GAME_SNAKE: draw_game_snake(layer, &s_snapshot); break;
     case BUDDY_PAGE_GAME_DINO: draw_game_dino(layer, &s_snapshot); break;
+    case BUDDY_PAGE_VOKIE: draw_vokie(layer, &s_snapshot); break;
     case BUDDY_PAGE_LIMITS: draw_limits(layer, &s_snapshot); break;
     case BUDDY_PAGE_TOOLS: draw_tools_breakdown(layer, &s_snapshot); break;
     case BUDDY_PAGE_PET: draw_companion(layer, &s_snapshot); break;

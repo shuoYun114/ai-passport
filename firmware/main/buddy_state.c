@@ -1,5 +1,7 @@
 #include "buddy_state.h"
 #include "buddy_games.h"
+#include "buddy_vokie.h"
+#include "buddy_ble.h"
 
 #include <stddef.h>
 #include <string.h>
@@ -322,6 +324,10 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
             case BUDDY_LAUNCHER_ITEM_PROFILE:
                 state->page = BUDDY_PAGE_PROFILE;
                 break;
+            case BUDDY_LAUNCHER_ITEM_VOKIE:
+                state->page = BUDDY_PAGE_VOKIE;
+                buddy_ble_set_vokie_adv_mode(true);
+                break;
             case BUDDY_LAUNCHER_ITEM_GAME_SNAKE:
                 buddy_snake_reset();
                 state->page = BUDDY_PAGE_GAME_SNAKE;
@@ -371,6 +377,17 @@ static void buddy_normal_click(buddy_state_t *state, buddy_key_t key,
     }
     if (state->page == BUDDY_PAGE_GAME_DINO) {
         buddy_dino_key(key);
+        buddy_set_ui_refresh(action);
+        return;
+    }
+    if (state->page == BUDDY_PAGE_VOKIE) {
+        if (key == BUDDY_KEY_UP) {
+            buddy_vokie_key_up();
+        } else if (key == BUDDY_KEY_DOWN) {
+            buddy_vokie_key_down();
+        } else if (key == BUDDY_KEY_OK) {
+            buddy_vokie_key_ok_click(100);
+        }
         buddy_set_ui_refresh(action);
         return;
     }
@@ -757,6 +774,10 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
             !buddy_has_prompt(state)) {
             if (state->page != BUDDY_PAGE_LAUNCHER) {
                 /* 无论在任何页面或游戏中，长按功能键无条件平滑返回主大菜单 */
+                if (state->page == BUDDY_PAGE_VOKIE) {
+                    buddy_vokie_stop_and_reset();
+                    buddy_ble_set_vokie_adv_mode(false);
+                }
                 state->menu_open = false;
                 state->reset_open = false;
                 state->profile_qr_open = false;
@@ -781,6 +802,9 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
         if (state->page == BUDDY_PAGE_PROFILE) {
             state->profile_qr_open = !state->profile_qr_open;
             buddy_set_ui_refresh(action);
+        } else if (state->page == BUDDY_PAGE_VOKIE) {
+            buddy_vokie_key_ok_double();
+            buddy_set_ui_refresh(action);
         }
         break;
     case BUDDY_EVENT_TICK:
@@ -792,6 +816,12 @@ void buddy_state_reduce(buddy_state_t *state, const buddy_event_t *event,
             buddy_dino_tick();
             state->last_user_activity_ms = now_ms;
             buddy_set_ui_refresh(action);
+        } else if (state->page == BUDDY_PAGE_VOKIE) {
+            const buddy_vokie_state_t *vs = buddy_vokie_get_state();
+            if (vs->recording || vs->status == BUDDY_VOKIE_STATE_THINKING) {
+                state->last_user_activity_ms = now_ms;
+                buddy_set_ui_refresh(action);
+            }
         } else {
             /* 非游戏页面检测空闲节能超时 */
             if (!state->screen_off) {
